@@ -1,5 +1,5 @@
 import {AbstractMazeCell, MazeCell} from './Maze';
-import {chooseRandomArrayElement, ViewMode} from './Utils';
+import {chooseRandomArrayElement, ViewMode, actionList, Direction} from './Utils';
 
 export class Agent {
   startCell: MazeCell;
@@ -9,21 +9,21 @@ export class Agent {
   discountFactor: number;
   learningRate: number;
   explorationFactor: number;
-  actionList = ['north', 'east', 'south', 'west'];
+
 
   constructor(startCell: MazeCell, maze: AbstractMazeCell[][]) {
     this.startCell = startCell;
     this.state = startCell;
     this.maze = maze;
     this.mazeDim = [maze[0].length, maze.length]
-    this.discountFactor = 0.15;
+    this.discountFactor = 0.4;
     this.learningRate = 0.5;
-    this.explorationFactor = 0.7;
+    this.explorationFactor = 0.6;
   }
   
   
   chooseGreedyAction() {
-    const valuedActions = this.actionList.map(action => {
+    const valuedActions = actionList.map(action => {
       const nextState = this.state.getNeighbor(action);
       
       const value = nextState !== null ? 
@@ -45,11 +45,11 @@ export class Agent {
     return randomValuedAction.action;
   }
   
-  chooseRandomAction() {
-    return chooseRandomArrayElement(this.actionList);
+  chooseRandomAction(): Direction {
+    return chooseRandomArrayElement(actionList);
   }
   
-  chooseAction() {
+  chooseAction(): Direction {
     if(Math.random() < this.explorationFactor) {
       return this.chooseRandomAction();
     } else {
@@ -67,7 +67,7 @@ export class Agent {
     this.state.value = newVal;
   }
   
-  takeAction(action: string) {
+  takeAction(action: Direction) {
     let nextState = this.state.getNeighbor(action);
     
     if(nextState === null){

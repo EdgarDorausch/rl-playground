@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 import {Agent} from './Agent';
-import {ViewMode, Direction} from './Utils';
+import {ViewMode, Direction, L2Norm} from './Utils';
 
-const colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([-10,10]);
+const colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
 
 
 export abstract class AbstractMazeCell {
@@ -21,12 +21,15 @@ export abstract class AbstractMazeCell {
   /**
    * Checks if a maze position is valid
    */
-  checkPosition(_x: number,_y: number) {
+  private checkPosition(_x: number,_y: number) {
     return 0 <= _x && _x < this.mazeDim[0] && // 0 <= x < dim_x
       0 <= _y && _y < this.mazeDim[1];       // 0 <= y < dim_y
   }
   
-  getNeighbor(direction: string): MazeCell|null {
+  /**
+   * 
+   */
+  getNeighbor(direction: Direction): MazeCell|null {
     let newPos;
     const x = this.x;
     const y = this.y;
@@ -35,7 +38,7 @@ export abstract class AbstractMazeCell {
         newPos = [x, y-1];
         break;
       case 'east':
-        newPos = [1, y];
+        newPos = [1+x, y];
         break;
       case 'south':
         newPos = [x, y+1];
@@ -71,6 +74,7 @@ export class MazeCell extends AbstractMazeCell {
   x: number;
   y: number;
   value: number;
+  policy: Direction;
 
   constructor(reward: number , position: [number, number], maze: AbstractMazeCell[][]) {
     super(position, maze)
@@ -78,6 +82,7 @@ export class MazeCell extends AbstractMazeCell {
     this.y = position[1]
     this.reward = reward;
     this.value = 0;
+    this.policy = 'north';
   }
   
   getColor(viewMode: ViewMode) {    
@@ -94,7 +99,16 @@ export class MazeCell extends AbstractMazeCell {
   }
 
   getTriangleColor(viewMode: ViewMode, direction: Direction) {
-    return 'blue';
+    switch(viewMode) {
+      case 'policy':
+        return direction === this.policy ? '#222' : '#eee';
+      case 'q-function':
+        return 'blue';
+      case 'reward':
+      case 'simple':
+      case 'value':
+        return 'red';
+    }
   }
 
   showTriangles(viewMode: ViewMode) {
@@ -142,17 +156,15 @@ export function constructMaze(mazeStr: string[]) {
     }
   }
   
-  let maze = new Array(cellDim)
-    .fill(null)
-    .map((_, x) => new Array(cellDim)
-      .fill(42));
+  let maze = new Array(cellDim).fill(null).map(
+    (_, x) => new Array(cellDim).fill(42));
   
   const getMazeCell = (x: number, y: number) => {
     const char = mazeStr[y].charAt(x);
     if(char === '#')
       return new SolidMazeCell([x,y], maze)
     return new MazeCell(
-      char === '€' ? 10 : -0,
+      1 - L2Norm(x-targetPos[0], y-targetPos[1])/L2Norm(16,16),//char === '€' ? 10 : -0,
       [x,y],
       maze
     );
