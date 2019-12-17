@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import {Agent} from './Agent';
-import {ViewMode} from './Utils';
+import {ViewMode, Direction} from './Utils';
 
 const colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([-10,10]);
 
@@ -62,6 +62,8 @@ export abstract class AbstractMazeCell {
   }
 
   abstract getColor(viewMode: ViewMode): string
+  abstract getTriangleColor(viewMode: ViewMode, direction: Direction): string
+  abstract showTriangles(viewMode: ViewMode): boolean
 }
 
 export class MazeCell extends AbstractMazeCell {
@@ -80,20 +82,43 @@ export class MazeCell extends AbstractMazeCell {
   
   getColor(viewMode: ViewMode) {    
     switch(viewMode){
-      case 'simple':
-        return 'darkgray';
       case 'reward':
         return colorScale(this.reward);
       case 'value':
         return colorScale(this.value);
+      case 'simple':
+      case 'policy':
+      case 'q-function':
+        return 'darkgray';
     }
-    throw new Error();
+  }
+
+  getTriangleColor(viewMode: ViewMode, direction: Direction) {
+    return 'blue';
+  }
+
+  showTriangles(viewMode: ViewMode) {
+    switch(viewMode) {
+      case 'policy':
+      case 'q-function':
+        return true;
+      case 'reward':
+      case 'simple':
+      case 'value':
+        return false;
+    }
   }
 }
 
 export class SolidMazeCell extends AbstractMazeCell {
   getColor() {
     return '#444';
+  }
+  getTriangleColor() {
+    return '#444';
+  }
+  showTriangles() {
+    return false;
   }
 }
 

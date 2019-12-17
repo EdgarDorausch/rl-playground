@@ -3,15 +3,14 @@ import './App.css';
 import * as d3 from 'd3';
 
 import {Agent} from './Agent';
-import {translate, sleep, ViewMode} from './Utils';
+import {translate, sleep, ViewMode, visibility} from './Utils';
 import {constructMaze, AbstractMazeCell, SolidMazeCell} from './Maze';
 
 
 const globalParams = {
   doTimeTravel: false,
-  viewMode: 'value',
+  viewMode: 'value' as ViewMode,
   doStartNewEpisode: false,
-  hideTriangles: false,
 }
 
 class App extends React.Component {
@@ -23,10 +22,12 @@ class App extends React.Component {
           RL Playground
         </h1>
         
-        <select onChange={(event) => {globalParams.viewMode = event.target.options[event.target.selectedIndex].text}}>
+        <select onChange={(event) => {globalParams.viewMode = event.target.options[event.target.selectedIndex].text as ViewMode}}>
           <option>value</option>
           <option>reward</option>
           <option>simple</option>
+          <option>policy</option>
+          <option>q-function</option>
         </select>
         
         <button type="button" onClick={() => globalParams.doTimeTravel = true}>
@@ -102,7 +103,7 @@ class RenderHandler {
     const cellRect = cellGroup.append('rect')
       .attr('width', this.cellSize)
       .attr('height', this.cellSize)
-      .attr('fill', d => d.getColor(globalParams.viewMode as ViewMode))
+      .attr('fill', d => d.getColor(globalParams.viewMode))
 
     const triangleSelection = columns
       .selectAll('polygon')
@@ -113,26 +114,26 @@ class RenderHandler {
     const westTriangle = cellGroup
       .append('polygon')
       .attr('points', d => westTrianglePoints(this.cellSize))
-      .attr('fill', 'red')
-      .attr("visibility",d => d instanceof SolidMazeCell || globalParams.hideTriangles ? 'hidden' : 'visible');
+      .attr('fill', d => d.getTriangleColor(globalParams.viewMode, 'west'))
+      .attr("visibility", d => visibility(d.showTriangles(globalParams.viewMode)));
 
     const northTriangle = cellGroup
       .append('polygon')
       .attr('points', d => northTrianglePoints(this.cellSize))
-      .attr('fill', 'blue')
-      .attr("visibility",d => d instanceof SolidMazeCell || globalParams.hideTriangles ? 'hidden' : 'visible');
+      .attr('fill', d => d.getTriangleColor(globalParams.viewMode, 'north'))
+      .attr("visibility", d => visibility(d.showTriangles(globalParams.viewMode)));
 
     const eastTriangle = cellGroup
       .append('polygon')
       .attr('points', d => eastTrianglePoints(this.cellSize))
-      .attr('fill', 'yellow')
-      .attr("visibility",d => d instanceof SolidMazeCell || globalParams.hideTriangles ? 'hidden' : 'visible');
+      .attr('fill', d => d.getTriangleColor(globalParams.viewMode, 'east'))
+      .attr("visibility", d => visibility(d.showTriangles(globalParams.viewMode)));
 
     const southTriangle = cellGroup
       .append('polygon')
       .attr('points', d => southTrianglePoints(this.cellSize))
-      .attr('fill', 'pink')
-      .attr("visibility",d => d instanceof SolidMazeCell || globalParams.hideTriangles ? 'hidden' : 'visible');
+      .attr('fill', d => d.getTriangleColor(globalParams.viewMode, 'south'))
+      .attr("visibility", d => visibility(d.showTriangles(globalParams.viewMode)));
 
     // Draw agent
     const agentCircle = this.svg
@@ -208,6 +209,7 @@ async function onLoad() {
     stepCounterDOMElem.innerHTML = stepCounter.toString();
     await sleep(50);
     renderHandler.draw();
+    // break;
   }
 }
 
