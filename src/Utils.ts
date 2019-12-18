@@ -24,4 +24,4 @@ export function chooseRandomArrayElement<T>(a: T[]): T {
 
 export type ViewMode = 'simple' | 'reward' | 'value' | 'q-function' | 'policy';
 export type Direction = 'north' | 'east' | 'west' | 'south';
-export const actionList: Direction[] = ['north' , 'east' , 'west' , 'south'];
+export const directionList: Direction[] = ['north' , 'east' , 'west' , 'south'];

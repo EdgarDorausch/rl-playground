@@ -1,5 +1,5 @@
 import {AbstractMazeCell, MazeCell} from './Maze';
-import {chooseRandomArrayElement, ViewMode, actionList, Direction} from './Utils';
+import {chooseRandomArrayElement, ViewMode, directionList, Direction} from './Utils';
 
 export class Agent {
   startCell: MazeCell;
@@ -23,7 +23,7 @@ export class Agent {
   
   
   chooseGreedyAction() {
-    const valuedActions = actionList.map(action => {
+    const valuedActions = directionList.map(action => {
       const nextState = this.state.getNeighbor(action);
       
       const value = nextState !== null ? 
@@ -46,7 +46,7 @@ export class Agent {
   }
   
   chooseRandomAction(): Direction {
-    return chooseRandomArrayElement(actionList);
+    return chooseRandomArrayElement(directionList);
   }
   
   chooseAction(): Direction {
@@ -71,7 +71,7 @@ export class Agent {
     let nextState = this.state.getNeighbor(action);
     
     if(nextState === null){
-      console.log(`Cant take action: ${action};`);
+      // console.log(`Cant take action: ${action};`);
       nextState = this.state;
     }
 

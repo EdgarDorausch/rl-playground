@@ -1,17 +1,19 @@
 import * as d3 from 'd3';
 import {Agent} from './Agent';
-import {ViewMode, Direction, L2Norm} from './Utils';
+import {ViewMode, Direction, L2Norm, directionList, chooseRandomArrayElement} from './Utils';
 
 const colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
 
+type Maze = AbstractMazeCell[][];
+
 
 export abstract class AbstractMazeCell {
-  maze: AbstractMazeCell[][];
+  maze: Maze;
   x: number;
   y: number;
   mazeDim: [number, number];
   
-  constructor(position: [number, number], maze: AbstractMazeCell[][]) {
+  constructor(position: [number, number], maze: Maze) {
     this.x = position[0];
     this.y = position[1];
     this.maze = maze;
@@ -27,7 +29,8 @@ export abstract class AbstractMazeCell {
   }
   
   /**
-   * 
+   * Returning the neighbor cell according to the given direction.
+   * `null` is returned if there is no neighbor inside the maze or the neighbor is a solid cell
    */
   getNeighbor(direction: Direction): MazeCell|null {
     let newPos;
@@ -69,20 +72,24 @@ export abstract class AbstractMazeCell {
   abstract showTriangles(viewMode: ViewMode): boolean
 }
 
+type Q = {[direction in Direction]: number};
+
 export class MazeCell extends AbstractMazeCell {
   reward: number;
   x: number;
   y: number;
   value: number;
   policy: Direction;
+  q: Q;
 
-  constructor(reward: number , position: [number, number], maze: AbstractMazeCell[][]) {
+  constructor(reward: number , position: [number, number], maze: Maze) {
     super(position, maze)
     this.x = position[0];
     this.y = position[1]
     this.reward = reward;
     this.value = 0;
-    this.policy = 'north';
+    this.policy = chooseRandomArrayElement(directionList);
+    this.q = {north: 0, south: 0, west: 0, east: 0};
   }
   
   getColor(viewMode: ViewMode) {    
@@ -103,7 +110,7 @@ export class MazeCell extends AbstractMazeCell {
       case 'policy':
         return direction === this.policy ? '#222' : '#eee';
       case 'q-function':
-        return 'blue';
+        return colorScale(this.q[direction]);
       case 'reward':
       case 'simple':
       case 'value':
@@ -124,6 +131,9 @@ export class MazeCell extends AbstractMazeCell {
   }
 }
 
+
+
+
 export class SolidMazeCell extends AbstractMazeCell {
   getColor() {
     return '#444';
@@ -139,7 +149,7 @@ export class SolidMazeCell extends AbstractMazeCell {
 
 
 
-export function constructMaze(mazeStr: string[]) {
+export function constructMaze(mazeStr: string[]): {maze: Maze, agent: Agent} {
   let startPos = [0,0];
   let targetPos = [0,0];
   const cellDim = 16;
