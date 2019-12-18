@@ -1,10 +1,11 @@
 import * as d3 from 'd3';
 import {Agent} from './Agent';
 import {ViewMode, Direction, L2Norm, directionList, chooseRandomArrayElement} from './Utils';
+import { TemporalDifferenceLearning } from './Algorith';
 
 const colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
 
-type Maze = AbstractMazeCell[][];
+export type Maze = AbstractMazeCell[][];
 
 
 export abstract class AbstractMazeCell {
@@ -186,7 +187,15 @@ export function constructMaze(mazeStr: string[]): {maze: Maze, agent: Agent} {
     }
   }
   
-  const agent = new Agent(maze[startPos[0]][startPos[1]], maze);
+  const agent = new Agent(
+    maze[startPos[0]][startPos[1]],
+    maze,
+    new TemporalDifferenceLearning(
+      0.25,
+      0.5,
+      0.6
+    )
+  );
   
   return {maze, agent};  
 }

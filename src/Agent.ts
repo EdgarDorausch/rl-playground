@@ -1,71 +1,22 @@
 import {AbstractMazeCell, MazeCell} from './Maze';
 import {chooseRandomArrayElement, ViewMode, directionList, Direction} from './Utils';
+import { Algorithm } from './Algorith';
 
 export class Agent {
   startCell: MazeCell;
   state: MazeCell;
   maze: AbstractMazeCell[][];
   mazeDim: [number, number];
-  discountFactor: number;
-  learningRate: number;
-  explorationFactor: number;
 
 
-  constructor(startCell: MazeCell, maze: AbstractMazeCell[][]) {
+  constructor(startCell: MazeCell, maze: AbstractMazeCell[][], private algorithm: Algorithm) {
     this.startCell = startCell;
     this.state = startCell;
     this.maze = maze;
-    this.mazeDim = [maze[0].length, maze.length]
-    this.discountFactor = 0.4;
-    this.learningRate = 0.5;
-    this.explorationFactor = 0.6;
+    this.mazeDim = [maze[0].length, maze.length];
+    this.algorithm.init(this.maze, this);
   }
   
-  
-  chooseGreedyAction() {
-    const valuedActions = directionList.map(action => {
-      const nextState = this.state.getNeighbor(action);
-      
-      const value = nextState !== null ? 
-        nextState.value:
-        Number.NEGATIVE_INFINITY;
-      
-      return {action, value};
-    });
-    
-    const maxValue = Math.max(...valuedActions.map(action=>action.value))
-    if(maxValue === Number.NEGATIVE_INFINITY) {
-      console.log(valuedActions)
-      throw new Error('Cant choose greedy action! Deadlock!');
-    }
-    
-    const maxActions = valuedActions.filter(action => action.value === maxValue);
-    const randomValuedAction = chooseRandomArrayElement(maxActions);
-
-    return randomValuedAction.action;
-  }
-  
-  chooseRandomAction(): Direction {
-    return chooseRandomArrayElement(directionList);
-  }
-  
-  chooseAction(): Direction {
-    if(Math.random() < this.explorationFactor) {
-      return this.chooseRandomAction();
-    } else {
-      return this.chooseGreedyAction();
-    }
-  }
-  
-  updateValue(nextState: MazeCell) {
-    const newVal = (1-this.learningRate)*this.state.value + 
-      this.learningRate*(
-        nextState.reward +
-        this.discountFactor*nextState.value
-      )
-    
-    this.state.value = newVal;
-  }
   
   takeAction(action: Direction) {
     let nextState = this.state.getNeighbor(action);
@@ -75,13 +26,13 @@ export class Agent {
       nextState = this.state;
     }
 
-    this.updateValue(nextState)
+    this.algorithm.updateParams(nextState)
     
     this.state = nextState;
   }
   
   doStep() {
-    const action = this.chooseAction();
+    const action = this.algorithm.chooseAction();
     this.takeAction(action);
   }
   
