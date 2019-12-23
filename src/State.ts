@@ -14,7 +14,7 @@ export class State {
     public reward: number,
     public value: number,
     public q: Directional,
-    public policy: Directional
+    public policy: Direction
   ) {}
 
   get t() {
@@ -76,7 +76,7 @@ export type StateBuilder = (x: number, y: number, t: number) => ({
   reward?: number,
   value?: number,
   q?: Directional,
-  policy?: Directional 
+  policy?: Direction 
 })
 
 type State3DList = State[][][];
@@ -109,7 +109,7 @@ export class StateTensor {
           reward  ?? 0,
           value   ?? 0,
           q       ?? new Directional(),
-          policy  ?? new Directional()
+          policy  ?? chooseRandomArrayElement(directionList)
         )}
       )))
   }

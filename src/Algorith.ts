@@ -13,10 +13,13 @@ export interface Algorithm {
 
 export class TemporalDifferenceLearning implements Algorithm {
 
+  private iteration = 0;
+  private reductionFactor = 1;
+
   constructor(
     private discountFactor: number,
     private learningRate: number,
-    private explorationFactor: number,
+    private explorationFactor: number = 1,
   ) {}
 
   //
@@ -31,11 +34,21 @@ export class TemporalDifferenceLearning implements Algorithm {
       neighbors.set(d, nextState?.value ?? Number.NEGATIVE_INFINITY)
     })
 
-    return neighbors.getMaximum().direction;
+    const action = neighbors.getMaximum().direction;
+    state.policy = action;
+    return action;
   }
   
   private chooseRandomAction(): Direction {
     return chooseRandomArrayElement(directionList);
+  }
+
+  private updateReductionFactor() {
+    this.iteration++;
+    this.reductionFactor *= 0.99999956;
+    if(this.iteration % 1000000 === 0) {
+      console.log('reductionFactor', this.reductionFactor);
+    }
   }
   
   //
@@ -43,7 +56,8 @@ export class TemporalDifferenceLearning implements Algorithm {
   //
 
   chooseAction(state: State): Direction {
-    if(Math.random() < this.explorationFactor) {
+    this.updateReductionFactor();
+    if(Math.random() < this.explorationFactor*this.reductionFactor) {
       return this.chooseRandomAction();
     } else {
       return this.chooseGreedyAction(state);

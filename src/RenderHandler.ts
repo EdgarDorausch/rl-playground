@@ -1,4 +1,4 @@
-import { translate, ViewMode, sleep, Direction, directionList } from './Utils';
+import { ViewMode, sleep, Direction, directionList } from './Utils';
 import { Agent } from './Agent';
 import * as d3 from 'd3';
 import { State, StateTensor } from './State';
@@ -141,7 +141,7 @@ export class RenderHandler {
     
     if(this.doTimeTravel) {
       this.doTimeTravel = false;
-      for(let i = 0; i<10000; i++) {
+      for(let i = 0; i<5000000; i++) {
         this.stepCounter++;
         this.agent.doStep();
       } 

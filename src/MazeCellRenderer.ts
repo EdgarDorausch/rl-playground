@@ -1,5 +1,5 @@
 import { ViewMode, Direction } from './Utils';
-import { State } from './State';
+import { State, StateTensor } from './State';
 import * as d3 from 'd3';
 
 export interface MazeCellRenderer {
@@ -11,6 +11,8 @@ export interface MazeCellRenderer {
 export class MyMazeCellRenderer implements MazeCellRenderer {
 
   private colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
+
+  constructor(private stateTensor: StateTensor) {}
 
   getColor(viewMode: ViewMode, state: State) {  
     if(!state.isValid) {
@@ -37,7 +39,14 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
 
     switch(viewMode) {
       case 'policy':
-        return direction === state.policy.getMaximum().direction ? '#222' : '#eee';
+        const itNum = 15;
+        let acc = 0;
+        const {x, y, t} = state;
+        for(let i = 0; i < itNum; i++) {
+          acc += this.stateTensor.unsafeGet(x,y,t+i).policy === direction ? 1 : 0
+        }
+        return this.colorScale(acc/itNum);
+        // return direction === state.policy ? '#222' : '#eee';
       case 'q-function':
         return this.colorScale(state.q.get(direction));
       case 'reward':
