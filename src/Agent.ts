@@ -1,4 +1,3 @@
-import {Direction} from './Utils';
 import { Algorithm } from './Algorith';
 import { State } from './State';
 

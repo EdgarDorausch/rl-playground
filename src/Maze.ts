@@ -1,10 +1,7 @@
-import * as d3 from 'd3';
 import {Agent} from './Agent';
-import {ViewMode, Direction, L2Norm, directionList, chooseRandomArrayElement} from './Utils';
+import {L2Norm} from './Utils';
 import { TemporalDifferenceLearning } from './Algorith';
-import { State, StateTensor, StateBuilder } from './State';
-
-
+import { StateTensor, StateBuilder } from './State';
 
 
 export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, agent: Agent} {
@@ -13,7 +10,7 @@ export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, age
   const cellDim = 16;
 
   const map: (string|null)[][] = new Array(cellDim).fill(null).map(
-    (_, x) => new Array(cellDim).fill(null));
+    (_) => new Array(cellDim).fill(null));
   
   for(let x = 0; x < 16; x++){
     for(let y = 0; y < 16; y++) {
@@ -29,7 +26,7 @@ export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, age
   }
 
   const [tX, tY] = targetPos;
-  const stateBuilder: StateBuilder = (x, y, t) => {
+  const stateBuilder: StateBuilder = (x, y) => {
     const char = map[x][y];
 
     return {
@@ -38,7 +35,7 @@ export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, age
     }
   }
   
-  const stateTensor = new StateTensor(16, 16, 50, stateBuilder);
+  const stateTensor = new StateTensor(16, 16, 1, stateBuilder);
 
   const [sX, sY] = startPos;
   const startState = stateTensor.unsafeGet(sX, sY, 0)

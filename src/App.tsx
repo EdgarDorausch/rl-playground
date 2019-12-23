@@ -5,7 +5,8 @@ import * as d3 from 'd3';
 import {Agent} from './Agent';
 import {translate, sleep, ViewMode, visibility} from './Utils';
 import {constructMaze} from './Maze';
-import { RenderHandler, MyMazeCellRenderer } from './RenderHandler';
+import { RenderHandler } from './RenderHandler';
+import { MyMazeCellRenderer } from './MazeCellRenderer';
 
 
 
@@ -72,9 +73,13 @@ class App extends React.PureComponent {
           reset
         </button>
         
-        <p id="stepCounter">
-          756
+        <p>
+          iteration: <i id="stepCounter"></i>
+          <br/>
+          timer: <i id="timer">55</i>
         </p>
+
+        <canvas id="canvas" style={{backgroundColor: 'gray'}}></canvas>
       </div>
     );
   }

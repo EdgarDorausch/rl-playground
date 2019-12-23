@@ -1,14 +1,16 @@
-import { translate, ViewMode, sleep, Direction } from './Utils';
+import { translate, ViewMode, sleep, Direction, directionList } from './Utils';
 import { Agent } from './Agent';
 import * as d3 from 'd3';
 import { State, StateTensor } from './State';
-
+import { MazeCellRenderer } from './MazeCellRenderer';
 
 
 export class RenderHandler {
   private cellStriding: number;
-  private svgSize: number;
-  private svg: d3.Selection<any, any, HTMLElement, any>|null = null;
+  private canvasSize: number;
+  private halfCellSize: number;
+
+  private ctx: CanvasRenderingContext2D|null = null;
 
   public doTimeTravel =  false;
   public viewMode =  'value' as ViewMode;
@@ -18,6 +20,7 @@ export class RenderHandler {
   private stepCounterDOMElem: HTMLElement|null = null;
 
   private timer = 0;
+  private timerDOMElem: HTMLElement|null = null;
 
   private positions: [number, number][];
 
@@ -30,47 +33,102 @@ export class RenderHandler {
     private mazeCellRenderer: MazeCellRenderer
   ) {
     this.cellStriding = cellSize + cellPadding;
-    this.svgSize = cellDim*(this.cellStriding) + cellPadding;
+    this.canvasSize = cellDim*(this.cellStriding) + cellPadding;
     this.positions = d3.cross(d3.range(cellDim), d3.range(cellDim));
 
-    this.getCellColor.bind(this);
+    this.halfCellSize = cellSize/2;
+
+    this.getCellColor = this.getCellColor.bind(this);
+    this.getTriangleVisibility = this.getTriangleVisibility.bind(this);
+    this.draw = this.draw.bind(this);
   }
 
   private setup() {
-    this.svg = d3.select('.App')
-      .append('svg')
-      .attr('width', this.svgSize)
-      .attr('height', this.svgSize)
-      .style('background-color', 'gray');
 
     this.stepCounterDOMElem = document.getElementById('stepCounter');
+    this.timerDOMElem = document.getElementById('timer');
+
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    canvas.width = this.canvasSize;
+    canvas.height = this.canvasSize;
+    this.ctx = canvas.getContext('2d');
   }
 
-  private getCellColor(state: State) {
-    return this.mazeCellRenderer.getColor(this.viewMode, state)
+  private getCellColor(state: State): string {
+    return this.mazeCellRenderer.getColor(this.viewMode, state);
+  }
+
+  private getTriangleColor(direction: Direction, state: State): string {
+    return this.mazeCellRenderer.getTriangleColor(this.viewMode, direction, state);
+  }
+
+  private getTriangleVisibility(state: State): boolean {
+    return this.mazeCellRenderer.showTriangles(this.viewMode, state);
   }
 
   private draw() {
-    if(this.svg === null)
-      throw new Error('Svg is null! Is setup called before draw?');
-    if(this.stepCounterDOMElem === null)
-      throw new Error('stepCounter DOM Element is null! Is setup called before draw?');
 
-    this.stepCounterDOMElem.innerHTML = this.stepCounter.toString();
+    if(this.ctx === null)
+      throw new Error('canvas 2d context is null! Is setup called before draw?');
 
-    this.svg.selectAll("*").remove();
+    this.timer = this.agent.state.t;
 
-    const states = this.positions.map( ([x,y]) => this.stateTensor.unsafeGet(x, y, this.timer));
-    
+    for(let pos of this.positions) {
+      const [x,y] = pos;
+      const state = this.stateTensor.unsafeGet(x, y, this.timer);
 
-    const cellGroup = this.svg
-      .selectAll('g')
-      .data(states)
-      .enter()
-      .append('g')
-      .attr('transform', ({x, y}) => translate(this.cellStriding*x + this.cellPadding, this.cellStriding*y + this.cellPadding))
-      
+      this.ctx.resetTransform()
+      this.ctx.translate(this.cellStriding*x + this.cellPadding, this.cellStriding*y + this.cellPadding);
 
+      const showTriangles = this.getTriangleVisibility(state);
+
+      if(showTriangles) {
+
+        for(let direction of directionList) {
+          this.ctx.fillStyle = this.getTriangleColor(direction, state);
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.halfCellSize, this.halfCellSize);
+
+          switch(direction) {
+            case 'north':
+              this.ctx.lineTo(0, 0);
+              this.ctx.lineTo(this.cellSize, 0);
+              break;
+            case 'east':
+              this.ctx.lineTo(this.cellSize, 0);
+              this.ctx.lineTo(this.cellSize, this.cellSize);
+              break;
+            case 'south':
+              this.ctx.lineTo(this.cellSize, this.cellSize);
+              this.ctx.lineTo(0, this.cellSize);
+              break;
+            case 'west':
+              this.ctx.lineTo(0, this.cellSize);
+              this.ctx.lineTo(0, 0);
+              break;
+          }
+
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
+      } else {
+        this.ctx.fillStyle = this.getCellColor(state);
+        this.ctx.fillRect(0,0, this.cellSize, this.cellSize);
+      }
+    }
+
+    this.ctx.resetTransform()
+    this.ctx.translate(
+      this.cellPadding + this.agent.state.x*this.cellStriding + this.cellSize/2,
+      this.cellPadding + this.agent.state.y*this.cellStriding + this.cellSize/2
+    );
+
+    this.ctx.fillStyle = 'green';
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, this.cellSize/2.2, 0, 2 * Math.PI);
+    this.ctx.fill();
+
+    window.requestAnimationFrame(this.draw);
   }
 
   private update() {
@@ -92,79 +150,26 @@ export class RenderHandler {
     this.agent.doStep();
   }
 
+  private updateHTML() {
+    if(this.stepCounterDOMElem === null)
+      throw new Error('stepCounter DOM Element is null! Is setup called before draw?');
+    if(this.timerDOMElem === null)
+      throw new Error('timer DOM Element is null! Is setup called before draw?');
+
+    this.stepCounterDOMElem.innerHTML = this.stepCounter.toString();
+    this.timerDOMElem.innerHTML = this.timer.toString();
+  }
+
   public async start() {
     this.setup();
 
+    window.requestAnimationFrame(this.draw);
+
     while(true) {
       this.update();
-      await sleep(30);
-      this.draw();
-      break;
-    }
-  }
-}
-
-
-
-export interface MazeCellRenderer {
-  getColor(viewMode: ViewMode, state: State): string
-  getTriangleColor(viewMode: ViewMode, direction: Direction, state: State): string
-  showTriangles(viewMode: ViewMode, state: State): boolean
-}
-
-export class MyMazeCellRenderer implements MazeCellRenderer {
-
-  private colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
-
-  getColor(viewMode: ViewMode, state: State) {  
-    if(!state.isValid) {
-      return '#444';
-    }
-
-    switch(viewMode){
-      case 'reward':
-        return this.colorScale(state.reward);
-      case 'value':
-        return this.colorScale(state.value);
-      case 'simple':
-      case 'policy':
-      case 'q-function':
-        return 'darkgray';
-    }
-  }
-
-  getTriangleColor(viewMode: ViewMode, direction: Direction, state: State) {
-
-    if(!state.isValid){
-      return '#444';
-    }
-
-    switch(viewMode) {
-      case 'policy':
-        return direction === state.policy.getMaximum().direction ? '#222' : '#eee';
-      case 'q-function':
-        return this.colorScale(state.q.get(direction));
-      case 'reward':
-      case 'simple':
-      case 'value':
-        return 'red';
-    }
-  }
-
-  showTriangles(viewMode: ViewMode, state: State) {
-
-    if(!state.isValid){
-      return false;
-    }
-
-    switch(viewMode) {
-      case 'policy':
-      case 'q-function':
-        return true;
-      case 'reward':
-      case 'simple':
-      case 'value':
-        return false;
+      this.updateHTML()
+      await sleep(40);
+      // break;
     }
   }
 }
