@@ -1,12 +1,8 @@
-import { translate, visibility, ViewMode, sleep } from './Utils';
+import { translate, ViewMode, sleep, Direction } from './Utils';
 import { Agent } from './Agent';
-import { AbstractMazeCell } from './Maze';
 import * as d3 from 'd3';
+import { State, StateTensor } from './State';
 
-const westTrianglePoints =  (cs: number) => `0,0         ${cs/2},${cs/2} 0,${cs}`;
-const northTrianglePoints = (cs: number) => `0,0         ${cs/2},${cs/2} ${cs},0`;
-const eastTrianglePoints =  (cs: number) => `${cs},${cs} ${cs/2},${cs/2} ${cs},0`;
-const southTrianglePoints = (cs: number) => `${cs},${cs} ${cs/2},${cs/2} 0,${cs}`;
 
 
 export class RenderHandler {
@@ -21,15 +17,23 @@ export class RenderHandler {
   private stepCounter = 0;
   private stepCounterDOMElem: HTMLElement|null = null;
 
+  private timer = 0;
+
+  private positions: [number, number][];
+
   constructor(
     private agent: Agent,
-    private maze: AbstractMazeCell[][],
-    private cellDim: number,
+    private stateTensor: StateTensor,
+    cellDim: number,
     private cellSize: number,
-    private cellPadding: number
+    private cellPadding: number,
+    private mazeCellRenderer: MazeCellRenderer
   ) {
     this.cellStriding = cellSize + cellPadding;
     this.svgSize = cellDim*(this.cellStriding) + cellPadding;
+    this.positions = d3.cross(d3.range(cellDim), d3.range(cellDim));
+
+    this.getCellColor.bind(this);
   }
 
   private setup() {
@@ -42,6 +46,10 @@ export class RenderHandler {
     this.stepCounterDOMElem = document.getElementById('stepCounter');
   }
 
+  private getCellColor(state: State) {
+    return this.mazeCellRenderer.getColor(this.viewMode, state)
+  }
+
   private draw() {
     if(this.svg === null)
       throw new Error('Svg is null! Is setup called before draw?');
@@ -51,66 +59,18 @@ export class RenderHandler {
     this.stepCounterDOMElem.innerHTML = this.stepCounter.toString();
 
     this.svg.selectAll("*").remove();
-      
-    const columns = this.svg
+
+    const states = this.positions.map( ([x,y]) => this.stateTensor.unsafeGet(x, y, this.timer));
+    
+
+    const cellGroup = this.svg
       .selectAll('g')
-      .data(this.maze)
+      .data(states)
       .enter()
       .append('g')
-      .attr('width', 10)
-
-    columns
-      .attr('transform', (d,i) => translate(this.cellStriding*i + this.cellPadding, this.cellPadding))
-
-    const cellGroup = columns
-      .selectAll('g')
-      .data(d => d)
-      .enter()
-      .append('g')
-      .attr('transform', (d,i) => translate(0, this.cellStriding*i))
+      .attr('transform', ({x, y}) => translate(this.cellStriding*x + this.cellPadding, this.cellStriding*y + this.cellPadding))
       
-    const cellRect = cellGroup.append('rect')
-      .attr('width', this.cellSize)
-      .attr('height', this.cellSize)
-      .attr('fill', d => d.getColor(this.viewMode))
 
-    const triangleSelection = columns
-      .selectAll('polygon')
-      .data(d => d)
-      .enter()
-      
-    // Draw triangles
-    const westTriangle = cellGroup
-      .append('polygon')
-      .attr('points', d => westTrianglePoints(this.cellSize))
-      .attr('fill', d => d.getTriangleColor(this.viewMode, 'west'))
-      .attr("visibility", d => visibility(d.showTriangles(this.viewMode)));
-
-    const northTriangle = cellGroup
-      .append('polygon')
-      .attr('points', d => northTrianglePoints(this.cellSize))
-      .attr('fill', d => d.getTriangleColor(this.viewMode, 'north'))
-      .attr("visibility", d => visibility(d.showTriangles(this.viewMode)));
-
-    const eastTriangle = cellGroup
-      .append('polygon')
-      .attr('points', d => eastTrianglePoints(this.cellSize))
-      .attr('fill', d => d.getTriangleColor(this.viewMode, 'east'))
-      .attr("visibility", d => visibility(d.showTriangles(this.viewMode)));
-
-    const southTriangle = cellGroup
-      .append('polygon')
-      .attr('points', d => southTrianglePoints(this.cellSize))
-      .attr('fill', d => d.getTriangleColor(this.viewMode, 'south'))
-      .attr("visibility", d => visibility(d.showTriangles(this.viewMode)));
-
-    // Draw agent
-    const agentCircle = this.svg
-      .append('circle')
-      .attr('r', this.cellSize/2.2)
-      .attr('cx',this.cellPadding + this.agent.state.x*this.cellStriding + this.cellSize/2)
-      .attr('cy', this.cellPadding + this.agent.state.y*this.cellStriding + this.cellSize/2)
-      .attr('fill', 'green')
   }
 
   private update() {
@@ -118,7 +78,7 @@ export class RenderHandler {
 
     if(this.doStartNewEpisode) {
       this.doStartNewEpisode = false;
-      this.agent.resetPosition();
+      // TODO: this.agent.resetPosition();
     }
     
     if(this.doTimeTravel) {
@@ -139,6 +99,71 @@ export class RenderHandler {
       this.update();
       await sleep(30);
       this.draw();
+    }
+  }
+}
+
+
+
+export interface MazeCellRenderer {
+  getColor(viewMode: ViewMode, state: State): string
+  getTriangleColor(viewMode: ViewMode, direction: Direction, state: State): string
+  showTriangles(viewMode: ViewMode, state: State): boolean
+}
+
+export class MyMazeCellRenderer implements MazeCellRenderer {
+
+  private colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
+
+  getColor(viewMode: ViewMode, state: State) {  
+    if(!state.isValid) {
+      return '#444';
+    }
+
+    switch(viewMode){
+      case 'reward':
+        return this.colorScale(state.reward);
+      case 'value':
+        return this.colorScale(state.value);
+      case 'simple':
+      case 'policy':
+      case 'q-function':
+        return 'darkgray';
+    }
+  }
+
+  getTriangleColor(viewMode: ViewMode, direction: Direction, state: State) {
+
+    if(!state.isValid){
+      return '#444';
+    }
+
+    switch(viewMode) {
+      case 'policy':
+        return direction === state.policy.getMaximum().direction ? '#222' : '#eee';
+      case 'q-function':
+        return this.colorScale(state.q.get(direction));
+      case 'reward':
+      case 'simple':
+      case 'value':
+        return 'red';
+    }
+  }
+
+  showTriangles(viewMode: ViewMode, state: State) {
+
+    if(!state.isValid){
+      return false;
+    }
+
+    switch(viewMode) {
+      case 'policy':
+      case 'q-function':
+        return true;
+      case 'reward':
+      case 'simple':
+      case 'value':
+        return false;
     }
   }
 }

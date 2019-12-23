@@ -25,3 +25,28 @@ export function chooseRandomArrayElement<T>(a: T[]): T {
 export type ViewMode = 'simple' | 'reward' | 'value' | 'q-function' | 'policy';
 export type Direction = 'north' | 'east' | 'west' | 'south';
 export const directionList: Direction[] = ['north' , 'east' , 'west' , 'south'];
+
+export class Directional {
+  private directionValues: {[direction in Direction]: number};
+
+  constructor() {
+    this.directionValues = {'north': 0, 'east': 0, 'south': 0, 'west': 0};
+  }
+
+  get(d: Direction): number {
+    return this.directionValues[d];
+  }
+  set(d: Direction, value: number): void {
+    this.directionValues[d] = value;
+  }
+
+  getMaximum(): {direction: Direction, directionValue: number} {
+    const maxValue = Math.max(...directionList.map(d => this.directionValues[d]));
+    const maxDirection = chooseRandomArrayElement(directionList.filter(d => this.directionValues[d] === maxValue));
+    
+    return {
+      direction: maxDirection,
+      directionValue: maxValue
+    }
+  }
+}

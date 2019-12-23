@@ -1,42 +1,30 @@
-import {AbstractMazeCell, MazeCell} from './Maze';
-import {chooseRandomArrayElement, ViewMode, directionList, Direction} from './Utils';
+import {Direction} from './Utils';
 import { Algorithm } from './Algorith';
+import { State } from './State';
 
 export class Agent {
-  startCell: MazeCell;
-  state: MazeCell;
-  maze: AbstractMazeCell[][];
-  mazeDim: [number, number];
+  public state: State;
 
-
-  constructor(startCell: MazeCell, maze: AbstractMazeCell[][], private algorithm: Algorithm) {
-    this.startCell = startCell;
-    this.state = startCell;
-    this.maze = maze;
-    this.mazeDim = [maze[0].length, maze.length];
-    this.algorithm.init(this.maze, this);
+  constructor(
+    startState: State,
+    // private maze: AbstractMazeCell[][],
+    private algorithm: Algorithm
+  ) {
+    this.state = startState;
   }
   
-  
   takeAction(action: Direction) {
-    let nextState = this.state.getNeighbor(action);
-    
-    if(nextState === null){
-      // console.log(`Cant take action: ${action};`);
-      nextState = this.state;
-    }
+    const oldState = this.state;
+    const newState = this.state.getNeighbor(action) ?? this.state;
+    const reward = newState.reward;
 
-    this.algorithm.updateParams(nextState)
-    
-    this.state = nextState;
+    this.state = newState;
+
+    this.algorithm.afterAction(oldState, action, reward, newState)
   }
   
   doStep() {
-    const action = this.algorithm.chooseAction();
+    const action = this.algorithm.chooseAction(this.state);
     this.takeAction(action);
-  }
-  
-  resetPosition() {
-    this.state = this.startCell;
   }
 }
