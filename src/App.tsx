@@ -74,8 +74,8 @@ class App extends React.PureComponent {
 
   private renderHandler: RenderHandler;
 
-  constructor() {
-    super({});
+  constructor(props: {}) {
+    super(props);
 
     const mazeStr = [
       '.........#......',
