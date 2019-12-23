@@ -7,24 +7,19 @@ export class Agent {
 
   constructor(
     startState: State,
-    // private maze: AbstractMazeCell[][],
     private algorithm: Algorithm
   ) {
     this.state = startState;
   }
-  
-  takeAction(action: Direction) {
+   
+  doStep() {
     const oldState = this.state;
+    const action = this.algorithm.chooseAction(this.state);
     const newState = this.state.getNeighbor(action) ?? this.state;
     const reward = newState.reward;
 
     this.state = newState;
 
     this.algorithm.afterAction(oldState, action, reward, newState)
-  }
-  
-  doStep() {
-    const action = this.algorithm.chooseAction(this.state);
-    this.takeAction(action);
   }
 }

@@ -99,6 +99,7 @@ export class RenderHandler {
       this.update();
       await sleep(30);
       this.draw();
+      break;
     }
   }
 }

@@ -71,6 +71,14 @@ export class State {
 }
 
 
+export type StateBuilder = (x: number, y: number, t: number) => ({
+  isValid?: boolean,
+  reward?: number,
+  value?: number,
+  q?: Directional,
+  policy?: Directional 
+})
+
 type State3DList = State[][][];
 export class StateTensor {
 
@@ -79,21 +87,30 @@ export class StateTensor {
   constructor(
     private maxX: number,
     private maxY: number,
-    private maxTimer: number
+    private maxTimer: number,
+    stateBuilder: StateBuilder
   ) {
     
     this.state3DList = 
       new Array(maxX    ).fill(null).map((_,x) => 
       new Array(maxY    ).fill(null).map((_,y) => 
-      new Array(maxTimer).fill(null).map((_,t) =>
-        new State(
+      new Array(maxTimer).fill(null).map((_,t) => {
+        const {
+          isValid,
+          reward,
+          value,
+          policy,
+          q
+        } = stateBuilder(x,y,t);
+        return new State(
           this,
           x,y,t,
-          true,
-          0,0,
-          new Directional(),
-          new Directional()
-        )
+          isValid ?? true,
+          reward  ?? 0,
+          value   ?? 0,
+          q       ?? new Directional(),
+          policy  ?? new Directional()
+        )}
       )))
   }
 
@@ -102,19 +119,21 @@ export class StateTensor {
     // Check if x,y in bounds
     if(0 <= x && x < this.maxX &&
        0 <= y && y < this.maxY) {
-      return null;
+      const modT = t % this.maxTimer; 
+      return(this.state3DList[x][y][modT])
+      
+    } else {
+      return null
     }
 
-    const modT = t % this.maxTimer; 
-
-    return(this.state3DList[x][y][modT])
+    
   }
 
   unsafeGet(x: number, y: number, t: number): State {
 
     const state = this.get(x,y,t);
     if(state === null) {
-      throw new Error()
+      throw new Error(`Could not return state for (x,y,t)=(${x},${y},${t})`)
     }
 
     return state;

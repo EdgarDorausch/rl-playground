@@ -4,8 +4,8 @@ import * as d3 from 'd3';
 
 import {Agent} from './Agent';
 import {translate, sleep, ViewMode, visibility} from './Utils';
-import {constructMaze, AbstractMazeCell, SolidMazeCell} from './Maze';
-import { RenderHandler } from './RenderHandler';
+import {constructMaze} from './Maze';
+import { RenderHandler, MyMazeCellRenderer } from './RenderHandler';
 
 
 
@@ -35,17 +35,18 @@ class App extends React.PureComponent {
       '$...............',
     ];
     
-    const {maze, agent} = constructMaze(mazeStr);
+    const {stateTensor, agent} = constructMaze(mazeStr);
     
     this.renderHandler = new RenderHandler(
       agent,
-      maze,
+      stateTensor,
       16,
       30,
-      2
+      2,
+      new MyMazeCellRenderer()
     )
     
-    console.log(maze)
+    console.log(stateTensor)
     console.log(agent);
   }
 
