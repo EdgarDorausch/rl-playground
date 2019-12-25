@@ -1,6 +1,5 @@
-import { ViewMode, sleep, Direction, directionList } from './Utils';
+import { ViewMode, sleep, Direction, directionList, cross, range } from './Utils';
 import { Agent } from './Agent';
-import * as d3 from 'd3';
 import { State, StateTensor } from './State';
 import { MazeCellRenderer } from './MazeCellRenderer';
 
@@ -34,7 +33,7 @@ export class RenderHandler {
   ) {
     this.cellStriding = cellSize + cellPadding;
     this.canvasSize = cellDim*(this.cellStriding) + cellPadding;
-    this.positions = d3.cross(d3.range(cellDim), d3.range(cellDim));
+    this.positions = cross(range(cellDim), range(cellDim));
 
     this.halfCellSize = cellSize/2;
 
