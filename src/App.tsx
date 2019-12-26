@@ -115,7 +115,7 @@ class App extends React.PureComponent {
 
   render() {
     return (
-      <div className="App">
+      <div className="App bp3-dark">
         <h1>
           RL Playground
         </h1>
@@ -127,7 +127,7 @@ class App extends React.PureComponent {
           width: '100%'
         }}>
           <ControlGroup fill={false} vertical={false} >
-            <div className="bp3-select .modifier">
+            <div className="bp3-select">
               <select onChange={(event) => {this.renderHandler.viewMode = event.target.options[event.target.selectedIndex].text as ViewMode}}>
                 <option>value</option>
                 <option>reward</option>
@@ -156,7 +156,7 @@ class App extends React.PureComponent {
           timer: <i id="timer">55</i>
         </p>
 
-        <canvas id="canvas" style={{backgroundColor: 'gray'}}></canvas>
+        <canvas id="canvas" style={{backgroundColor: '#354553', border: 'thick double rgb(64, 95, 112)'}}></canvas>
       </div>
     );
   }

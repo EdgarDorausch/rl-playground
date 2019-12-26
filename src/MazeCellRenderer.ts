@@ -17,7 +17,7 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
 
   getColor(viewMode: ViewMode, state: State) {  
     if(!state.isValid) {
-      return '#444';
+      return '#777';
     }
 
     switch(viewMode){
@@ -35,7 +35,7 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
   getTriangleColor(viewMode: ViewMode, direction: Direction, state: State) {
 
     if(!state.isValid){
-      return '#444';
+      return '#777';
     }
 
     switch(viewMode) {
