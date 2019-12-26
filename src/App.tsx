@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button, ButtonGroup, ControlGroup, H1, H6, Divider, H2 } from '@blueprintjs/core';
 import './App.css';
 
 import {ViewMode} from './Utils';
@@ -70,6 +71,7 @@ import { MyMazeCellRenderer } from './MazeCellRenderer';
 // ];
 
 
+
 class App extends React.PureComponent {
 
   private renderHandler: RenderHandler;
@@ -118,22 +120,37 @@ class App extends React.PureComponent {
           RL Playground
         </h1>
         
-        <select onChange={(event) => {this.renderHandler.viewMode = event.target.options[event.target.selectedIndex].text as ViewMode}}>
-          <option>value</option>
-          <option>reward</option>
-          <option>simple</option>
-          <option>policy</option>
-          <option>q-function</option>
-        </select>
         
-        <button type="button" onClick={() => this.renderHandler.doTimeTravel = true}>
-          time travel
-        </button>
-        <button type="button" onClick={() => this.renderHandler.doStartNewEpisode = true}>
-          reset
-        </button>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%'
+        }}>
+          <ControlGroup fill={false} vertical={false} >
+            <div className="bp3-select .modifier">
+              <select onChange={(event) => {this.renderHandler.viewMode = event.target.options[event.target.selectedIndex].text as ViewMode}}>
+                <option>value</option>
+                <option>reward</option>
+                <option>simple</option>
+                <option>policy</option>
+                <option>q-function</option>
+              </select>
+            </div>
         
+            <Button
+              text="time travel"
+              onClick={() => this.renderHandler.doTimeTravel = true}
+            />
+            {/* <Button
+              text="reset"
+              onClick={() => this.renderHandler.doStartNewEpisode = true}
+            /> */}
+          </ControlGroup>
+        </div>
+        
+        {/* <Divider/> */}
         <p>
+          <br/>
           iteration: <i id="stepCounter"></i>
           <br/>
           timer: <i id="timer">55</i>
