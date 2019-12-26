@@ -22,6 +22,24 @@ export function chooseRandomArrayElement<T>(a: T[]): T {
   return a[idx];
 }
 
+export function range(stop: number): number[] {
+  const out: number[] = [];
+  for(let i=0; i<stop; i++) {
+    out.push(i)
+  }
+  return out;
+}
+
+export function cross<A,B>(as: A[], bs: B[]): [A,B][] {
+  const out: [A,B][] = [];
+  for(let a of as) {
+    for(let b of bs) {
+      out.push([a,b]);
+    }
+  }
+  return out;
+}
+
 export type ViewMode = 'simple' | 'reward' | 'value' | 'q-function' | 'policy';
 export type Direction = 'north' | 'east' | 'west' | 'south';
 export const directionList: Direction[] = ['north' , 'east' , 'west' , 'south'];
