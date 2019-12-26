@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, ButtonGroup, ControlGroup, H1, H6, Divider, H2 } from '@blueprintjs/core';
+import { Button, ControlGroup } from '@blueprintjs/core';
 import './App.css';
 
 import {ViewMode} from './Utils';
