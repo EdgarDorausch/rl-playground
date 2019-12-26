@@ -156,7 +156,11 @@ class App extends React.PureComponent {
           timer: <i id="timer">55</i>
         </p>
 
-        <canvas id="canvas" style={{backgroundColor: '#354553', border: 'thick double rgb(64, 95, 112)'}}></canvas>
+        <canvas id="canvas" style={{
+          backgroundColor: '#354553',
+          border: 'thick double rgb(64, 95, 112)',
+          borderRadius: 6
+        }}></canvas>
       </div>
     );
   }
