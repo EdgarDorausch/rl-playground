@@ -140,7 +140,7 @@ export class RenderHandler {
     
     if(this.doTimeTravel) {
       this.doTimeTravel = false;
-      for(let i = 0; i<5000000; i++) {
+      for(let i = 0; i<1_000_000; i++) {
         this.stepCounter++;
         this.agent.doStep();
       } 
