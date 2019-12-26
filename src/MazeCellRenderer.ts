@@ -10,7 +10,8 @@ export interface MazeCellRenderer {
 
 export class MyMazeCellRenderer implements MazeCellRenderer {
 
-  private colorScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
+  private linScale = d3.scaleSequential(d3.interpolatePuOr).domain([0,1]);
+  private powerScale = (t: number) => d3.scaleSequential(d3.interpolatePuOr).domain([0,1])(Math.pow(t, 1/10));
 
   constructor(private stateTensor: StateTensor) {}
 
@@ -21,9 +22,9 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
 
     switch(viewMode){
       case 'reward':
-        return this.colorScale(state.reward);
+        return this.powerScale(state.reward);
       case 'value':
-        return this.colorScale(state.value);
+        return this.powerScale(state.value);
       case 'simple':
       case 'policy':
       case 'q-function':
@@ -39,16 +40,17 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
 
     switch(viewMode) {
       case 'policy':
-        const itNum = 15;
+        const itNum = 20;
+        const itNumHalf = Math.floor(itNum/2);
         let acc = 0;
         const {x, y, t} = state;
         for(let i = 0; i < itNum; i++) {
-          acc += this.stateTensor.unsafeGet(x,y,t+i).policy === direction ? 1 : 0
+          acc += this.stateTensor.unsafeGet(x,y,t+i-itNumHalf).policy === direction ? 1 : 0
         }
-        return this.colorScale(acc/itNum);
+        return this.linScale(acc/itNum);
         // return direction === state.policy ? '#222' : '#eee';
       case 'q-function':
-        return this.colorScale(state.q.get(direction));
+        return this.linScale(state.q.get(direction));
       case 'reward':
       case 'simple':
       case 'value':

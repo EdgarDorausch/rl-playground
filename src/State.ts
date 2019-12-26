@@ -119,7 +119,7 @@ export class StateTensor {
     // Check if x,y in bounds
     if(0 <= x && x < this.maxX &&
        0 <= y && y < this.maxY) {
-      const modT = t % this.maxTimer; 
+      const modT = ((t % this.maxTimer)+this.maxTimer) % this.maxTimer; // Map t to [0,maxTimer) interval
       return(this.state3DList[x][y][modT])
       
     } else {
