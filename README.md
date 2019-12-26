@@ -1,6 +1,6 @@
 # rl-playground
 
-!()[https://github.com/EdgarDorausch/rl-playground/workflows/Build/badge.svg]
+![](https://github.com/EdgarDorausch/rl-playground/workflows/Build/badge.svg)
 
 just a little private test environment for several reinforcement learning algorithms.
 You can visit the current state of the master branch at [https://edgardorausch.github.io/rl-playground/](https://edgardorausch.github.io/rl-playground/)
