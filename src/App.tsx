@@ -1,11 +1,28 @@
 import React from 'react';
-import { Button, ControlGroup } from '@blueprintjs/core';
+import { Button, ControlGroup, ProgressBar } from '@blueprintjs/core';
 import './App.css';
 
-import {ViewMode} from './Utils';
+import {ViewMode, viewModeList} from './Utils';
 import {constructMaze} from './Maze';
 import { RenderHandler } from './RenderHandler';
 import { MyMazeCellRenderer } from './MazeCellRenderer';
+
+
+const FlexContainer: React.SFC<{width?: string|number}> = ({width, children}) => (
+  <div
+    className="FlexContainer"
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%'
+    }}
+  >
+    <div style={{width}}>
+      {children}
+    </div>
+  </div>
+)
+
 
 // A simple maze
 // =========================
@@ -72,7 +89,7 @@ import { MyMazeCellRenderer } from './MazeCellRenderer';
 
 
 
-class App extends React.PureComponent {
+class App extends React.Component<{},{timeTravelProgress: number}> {
 
   private renderHandler: RenderHandler;
 
@@ -106,34 +123,34 @@ class App extends React.PureComponent {
       16,
       30,
       2,
-      new MyMazeCellRenderer(stateTensor)
+      new MyMazeCellRenderer(stateTensor),
+      (t) => {this.setState({timeTravelProgress: t});}
     )
     
     console.log(stateTensor)
     console.log(agent);
+
+    this.state = {
+      timeTravelProgress: 0
+    }
   }
 
   render() {
     return (
-      <div className="App">
+      <div className="App bp3-dark">
         <h1>
           RL Playground
         </h1>
         
         
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          width: '100%'
-        }}>
+        <FlexContainer>
           <ControlGroup fill={false} vertical={false} >
-            <div className="bp3-select .modifier">
+            <div className="bp3-select">
               <select onChange={(event) => {this.renderHandler.viewMode = event.target.options[event.target.selectedIndex].text as ViewMode}}>
-                <option>value</option>
-                <option>reward</option>
-                <option>simple</option>
-                <option>policy</option>
-                <option>q-function</option>
+                {viewModeList.map(
+                  viewMode =>
+                  <option key={viewMode}>{viewMode}</option>
+                )}
               </select>
             </div>
         
@@ -146,8 +163,18 @@ class App extends React.PureComponent {
               onClick={() => this.renderHandler.doStartNewEpisode = true}
             /> */}
           </ControlGroup>
-        </div>
-        
+          
+        </FlexContainer>
+
+        <br/>
+        <FlexContainer width={300}>
+            <ProgressBar
+              value={this.state.timeTravelProgress}
+              intent="success"
+              animate={false}
+            />
+        </FlexContainer>
+       
         {/* <Divider/> */}
         <p>
           <br/>
@@ -156,7 +183,11 @@ class App extends React.PureComponent {
           timer: <i id="timer">55</i>
         </p>
 
-        <canvas id="canvas" style={{backgroundColor: 'gray'}}></canvas>
+        <canvas id="canvas" style={{
+          backgroundColor: '#354553',
+          border: 'thick double rgb(64, 95, 112)',
+          borderRadius: 6
+        }}></canvas>
       </div>
     );
   }
