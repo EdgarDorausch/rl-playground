@@ -11,6 +11,7 @@ export class RenderHandler {
 
   private ctx: CanvasRenderingContext2D|null = null;
 
+  private travelTime = 5_000_000; 
   public doTimeTravel =  false;
   public viewMode: ViewMode = viewModeList[0];
   public doStartNewEpisode =  false;
@@ -23,13 +24,15 @@ export class RenderHandler {
 
   private positions: [number, number][];
 
+
   constructor(
     private agent: Agent,
     private stateTensor: StateTensor,
     cellDim: number,
     private cellSize: number,
     private cellPadding: number,
-    private mazeCellRenderer: MazeCellRenderer
+    private mazeCellRenderer: MazeCellRenderer,
+    private onTimeTravelProgressChange?: (t: number) => void
   ) {
     this.cellStriding = cellSize + cellPadding;
     this.canvasSize = cellDim*(this.cellStriding) + cellPadding;
@@ -130,7 +133,7 @@ export class RenderHandler {
     window.requestAnimationFrame(this.draw);
   }
 
-  private update() {
+  private async update() {
     this.stepCounter++;
 
     if(this.doStartNewEpisode) {
@@ -140,10 +143,17 @@ export class RenderHandler {
     
     if(this.doTimeTravel) {
       this.doTimeTravel = false;
-      for(let i = 0; i<1_000_000; i++) {
+      for(let i = 0; i<this.travelTime; i++) {
         this.stepCounter++;
         this.agent.doStep();
-      } 
+        const progress = i/this.travelTime;
+        if(progress%0.01 < 0.0000001) {
+          this.onTimeTravelProgressChange?.(progress);
+          this.updateHTML()
+          await sleep(1);
+        }
+      }
+      this.onTimeTravelProgressChange?.(0);
     }
     
     this.agent.doStep();
@@ -165,7 +175,7 @@ export class RenderHandler {
     window.requestAnimationFrame(this.draw);
 
     while(true) {
-      this.update();
+      await this.update();
       this.updateHTML()
       await sleep(40);
       // break;
