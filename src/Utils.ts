@@ -40,9 +40,12 @@ export function cross<A,B>(as: A[], bs: B[]): [A,B][] {
   return out;
 }
 
-export type ViewMode = 'simple' | 'reward' | 'value' | 'q-function' | 'policy';
-export type Direction = 'north' | 'east' | 'west' | 'south';
-export const directionList: Direction[] = ['north' , 'east' , 'west' , 'south'];
+export const viewModeList = ['reward' , 'value' , 'q-function' , 'policy'] as ['reward' , 'value' , 'q-function' , 'policy'];
+export type ViewMode = typeof viewModeList[number];
+
+export const directionList = ['north' , 'east' , 'west' , 'south'] as ['north' , 'east' , 'west' , 'south'];
+export type Direction = typeof directionList[number];
+
 
 export class Directional {
   private directionValues: {[direction in Direction]: number};

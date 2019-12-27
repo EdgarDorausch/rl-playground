@@ -1,4 +1,4 @@
-import { ViewMode, sleep, Direction, directionList, cross, range } from './Utils';
+import { ViewMode, sleep, Direction, directionList, cross, range, viewModeList } from './Utils';
 import { Agent } from './Agent';
 import { State, StateTensor } from './State';
 import { MazeCellRenderer } from './MazeCellRenderer';
@@ -12,7 +12,7 @@ export class RenderHandler {
   private ctx: CanvasRenderingContext2D|null = null;
 
   public doTimeTravel =  false;
-  public viewMode =  'value' as ViewMode;
+  public viewMode: ViewMode = viewModeList[0];
   public doStartNewEpisode =  false;
   
   private stepCounter = 0;

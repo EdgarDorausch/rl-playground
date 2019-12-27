@@ -25,10 +25,9 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
         return this.powerScale(state.reward);
       case 'value':
         return this.powerScale(state.value);
-      case 'simple':
       case 'policy':
       case 'q-function':
-        return 'darkgray';
+        return 'red';
     }
   }
 
@@ -52,7 +51,6 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
       case 'q-function':
         return this.linScale(state.q.get(direction));
       case 'reward':
-      case 'simple':
       case 'value':
         return 'red';
     }
@@ -69,7 +67,6 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
       case 'q-function':
         return true;
       case 'reward':
-      case 'simple':
       case 'value':
         return false;
     }

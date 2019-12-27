@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, ControlGroup } from '@blueprintjs/core';
 import './App.css';
 
-import {ViewMode} from './Utils';
+import {ViewMode, viewModeList} from './Utils';
 import {constructMaze} from './Maze';
 import { RenderHandler } from './RenderHandler';
 import { MyMazeCellRenderer } from './MazeCellRenderer';
@@ -129,11 +129,10 @@ class App extends React.PureComponent {
           <ControlGroup fill={false} vertical={false} >
             <div className="bp3-select">
               <select onChange={(event) => {this.renderHandler.viewMode = event.target.options[event.target.selectedIndex].text as ViewMode}}>
-                <option>value</option>
-                <option>reward</option>
-                <option>simple</option>
-                <option>policy</option>
-                <option>q-function</option>
+                {viewModeList.map(
+                  viewMode =>
+                  <option>{viewMode}</option>
+                )}
               </select>
             </div>
         
