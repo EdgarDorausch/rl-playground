@@ -14,7 +14,7 @@ export class Agent {
   doStep() {
     const oldState = this.state;
     const action = this.algorithm.chooseAction(this.state);
-    const newState = this.state.getNeighbor(action) ?? this.state;
+    const newState = this.state.getNeighbor(action);
     const reward = newState.reward;
 
     this.state = newState;

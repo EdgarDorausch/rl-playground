@@ -31,7 +31,7 @@ export class TemporalDifferenceLearning implements Algorithm {
     const neighbors = new Directional();
     directionList.forEach(d => {
       const nextState = state.getNeighbor(d);
-      neighbors.set(d, nextState?.value ?? Number.NEGATIVE_INFINITY)
+      neighbors.set(d, nextState.value)
     })
 
     const action = neighbors.getMaximum().direction;
