@@ -34,7 +34,7 @@ export class State {
    * Returning the neighbor state according to the given direction.
    * `null` is returned if there is no neighbor inside the stateTensor or the neighbor is not valid
    */
-  getNeighbor(direction: Direction): State|null {
+  getNeighbor(direction: Direction): State {
     let newPos;
     const x = this._x;
     const y = this._y;
@@ -59,15 +59,21 @@ export class State {
     const [newX,newY,newT] = newPos;
     const neighbor = this.stateTensor.get(newX, newY, newT);
 
-    if (neighbor === null) {
-      return null;
+    if (neighbor === null || !neighbor.isValid) {
+      return this.getFutureState();
     }
-    
-    if(!neighbor.isValid)
-      return null;
-      
+
     return neighbor;
   }
+
+  /**
+   * Returns the state with the same x and y coordinates but one time tick in the future
+   * TODO: write unit test 
+   */
+  getFutureState() {
+    const {x, y, t} = this;
+    return this.stateTensor.unsafeGet(x,y,t+1); // entry with this indices should always exist
+  } 
 }
 
 
