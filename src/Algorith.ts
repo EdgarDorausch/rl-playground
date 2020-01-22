@@ -3,8 +3,8 @@ import { State, StateTensor } from './State';
 
 export class Algorithm {
 
+  // TODO: parameter initializer
   constructor(
-    private initParameters: () => {},
     private parameterUpdator: ParameterUpdator,
     private policyUpdator: PolicyUpdator,
   ) {}
@@ -25,7 +25,7 @@ export class Algorithm {
   }
 }
 
-interface ParameterUpdator {
+export interface ParameterUpdator {
   /**
    * @param oldState state before taking action
    * @param action action taken
@@ -35,11 +35,11 @@ interface ParameterUpdator {
   updateParameters(stateTensor: StateTensor, oldState: State, action: Direction, reward: number, newState: State): void
 }
 
-interface PolicyUpdator {
+export interface PolicyUpdator {
   updatePolicy(stateTensor: StateTensor, currentState: State): void
 }
 
-class EpsilonGreedyPolicyUpdator implements PolicyUpdator {
+export class EpsilonGreedyPolicyUpdator implements PolicyUpdator {
 
   constructor(protected Ɛ: number) {}
 
