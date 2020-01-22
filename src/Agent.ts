@@ -1,11 +1,12 @@
 import { Algorithm } from './Algorith';
-import { State } from './State';
+import { State, StateTensor } from './State';
 
 export class Agent {
   public state: State;
 
   constructor(
     startState: State,
+    protected stateTensor: StateTensor,
     private algorithm: Algorithm
   ) {
     this.state = startState;
@@ -19,6 +20,6 @@ export class Agent {
 
     this.state = newState;
 
-    this.algorithm.afterAction(oldState, action, reward, newState)
+    this.algorithm.afterAction(this.stateTensor,oldState, action, reward, newState);
   }
 }
