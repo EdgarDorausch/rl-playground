@@ -1,4 +1,4 @@
-import { Algorithm } from './Algorith';
+import { Algorithm } from './Algorithm/index';
 import { State, StateTensor } from './State';
 
 export class Agent {
