@@ -49,9 +49,19 @@ export const numberOfDirections = directionList.length;
 
 
 type DirectionValues = {[direction in Direction]: number};
+type DirectionValueInitializer = (direction: Direction) => number;
 export class Directional {
 
-  constructor(protected directionValues: DirectionValues = {'north': 0, 'east': 0, 'south': 0, 'west': 0}) {}
+  protected directionValues: DirectionValues;
+
+  constructor(directionValueInitializer: DirectionValueInitializer = () => 0) {
+    this.directionValues = {
+      north: directionValueInitializer('north'),
+      east: directionValueInitializer('east'),
+      west: directionValueInitializer('west'),
+      south: directionValueInitializer('south'),
+    }
+  }
 
   get(d: Direction): number {
     return this.directionValues[d];
@@ -75,21 +85,28 @@ export class Directional {
 }
 
 const pseudoZero = 0.00001;
-
 export class StochasticDirectional extends Directional {
 
-  constructor(initValues: DirectionValues = {'north': 1, 'east': 1, 'south': 1, 'west': 1}) {
-    super(initValues);
-    this.normalizeDirectionValues();
+  constructor(directionValueInitializer: DirectionValueInitializer = () => 0.25) {
+    super(directionValueInitializer);
   }
 
-  private normalizeDirectionValues() {
-    const l1Norm = directionList.reduce((acc, direction) => this.directionValues[direction], 0);
+   normalize() {
+    const l1Norm = directionList.reduce((acc, direction) => this.directionValues[direction]+acc, 0);
     if(l1Norm === 0) {
       throw new Error('Sum of all elements in StochasticDirectional is Zero, so normalization has failed!')
     }
     for(let direction of directionList) {
       this.directionValues[direction] /= l1Norm;
+    }
+  }
+
+  check() {
+    const l1Norm = directionList.reduce((acc, direction) => this.directionValues[direction]+acc, 0);
+    if(l1Norm === 0) {
+      throw new Error('Sum of all elements in StochasticDirectional is Zero, so normalization has failed!')
+    }
+    for(let direction of directionList) {
       if(this.directionValues[direction] < -pseudoZero) {
         throw new Error('Elements in StochasticDirectional should not be negative!')
       }
@@ -98,7 +115,6 @@ export class StochasticDirectional extends Directional {
 
   set(d: Direction, value: number): void {
     super.set(d, value);
-    this.normalizeDirectionValues();
   }
 
   getDirectionByDistribution(): Direction {

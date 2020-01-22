@@ -44,17 +44,14 @@ export class EpsilonGreedyPolicyUpdator implements PolicyUpdator {
   constructor(protected Ɛ: number) {}
 
   updatePolicy(stateTensor: StateTensor, currentState: State) {
-    const neighbors = new Directional();
-    directionList.forEach(d => {
-      const nextState = currentState.getNeighbor(d);
-      neighbors.set(d, nextState.value);
-    })
+    const neighbors = new Directional(d => currentState.getNeighbor(d).value);
 
     const greedyAction = neighbors.getMaximum().direction;
-    const newPolicy = new StochasticDirectional();
-    directionList.forEach(action => newPolicy.set(action,
-      action === greedyAction ? this.Ɛ / numberOfDirections + 1-this.Ɛ : this.Ɛ / numberOfDirections
-    ));
+    const newPolicy = new StochasticDirectional(action => 
+      action === greedyAction ?
+      this.Ɛ / 4 + 1-this.Ɛ :
+      this.Ɛ / 4
+    );
     currentState.policy = newPolicy;
   }
 }
