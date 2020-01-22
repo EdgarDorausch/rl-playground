@@ -1,4 +1,4 @@
-import { Direction, directionList, chooseRandomArrayElement, Directional } from './Utils';
+import { Direction, Directional, StochasticDirectional } from './Utils';
 
 export class State {
 
@@ -14,7 +14,7 @@ export class State {
     public reward: number,
     public value: number,
     public q: Directional,
-    public policy: Directional
+    public policy: StochasticDirectional
   ) {}
 
   get t() {
@@ -82,7 +82,7 @@ export type StateBuilder = (x: number, y: number, t: number) => ({
   reward?: number,
   value?: number,
   q?: Directional,
-  policy?: Directional 
+  policy?: StochasticDirectional 
 })
 
 type State3DList = State[][][];
@@ -115,7 +115,7 @@ export class StateTensor {
           reward  ?? 0,
           value   ?? 0,
           q       ?? new Directional(),
-          policy  ?? new Directional()
+          policy  ?? new StochasticDirectional()
         )}
       )))
   }

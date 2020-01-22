@@ -1,4 +1,4 @@
-import { directionList, chooseRandomArrayElement, Direction, Directional, numberOfDirections } from './Utils';
+import { directionList, chooseRandomArrayElement, Direction, Directional, numberOfDirections, StochasticDirectional } from './Utils';
 import { State, StateTensor } from './State';
 
 export class Algorithm {
@@ -51,7 +51,7 @@ export class EpsilonGreedyPolicyUpdator implements PolicyUpdator {
     })
 
     const greedyAction = neighbors.getMaximum().direction;
-    const newPolicy = new Directional();
+    const newPolicy = new StochasticDirectional();
     directionList.forEach(action => newPolicy.set(action,
       action === greedyAction ? this.Ɛ / numberOfDirections + 1-this.Ɛ : this.Ɛ / numberOfDirections
     ));
