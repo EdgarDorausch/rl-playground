@@ -1,89 +1,103 @@
-import { directionList, chooseRandomArrayElement, Direction, Directional } from './Utils';
-import { State } from './State';
+import { directionList, chooseRandomArrayElement, Direction, Directional, numberOfDirections } from './Utils';
+import { State, StateTensor } from './State';
 
-
-
-export interface Algorithm {
-  chooseAction(state: State): Direction;
-  afterAction(oldState: State, action: Direction, reward: number, newState: State): void;
-  startNewEpisode(): void;
-  endEpisode(): void;
-}
-
-
-export class TemporalDifferenceLearning implements Algorithm {
-
-  private iteration = 0;
-  private reductionFactor = 1;
+export class Algorithm {
 
   constructor(
-    private discountFactor: number,
-    private learningRate: number,
-    private explorationFactor: number = 1,
+    private initParameters: () => {},
+    private parameterUpdator: ParameterUpdator,
+    private policyUpdator: PolicyUpdator,
   ) {}
 
-  //
-  // ─── PRIVATE METHODS ────────────────────────────────────────────────────────────
-  //
-
-  private chooseGreedyAction(state: State): Direction {
-
-    const neighbors = new Directional();
-    directionList.forEach(d => {
-      const nextState = state.getNeighbor(d);
-      neighbors.set(d, nextState.value)
-    })
-
-    const action = neighbors.getMaximum().direction;
-    state.policy = action;
-    return action;
+  afterAction(stateTensor: StateTensor, oldState: State, action: Direction, reward: number, newState: State): void {
+    this.parameterUpdator.updateParameters(stateTensor, oldState, action, reward, newState);
+    this.policyUpdator.updatePolicy(stateTensor, newState);
   }
-  
-  private chooseRandomAction(): Direction {
-    return chooseRandomArrayElement(directionList);
-  }
-
-  private updateReductionFactor() {
-    this.iteration++;
-    this.reductionFactor *= 0.99999956;
-    if(this.iteration % 1000000 === 0) {
-      console.log('reductionFactor', this.reductionFactor);
-    }
-  }
-  
-  //
-  // ─── PUBLIC METHODS ─────────────────────────────────────────────────────────────
-  //
-
   chooseAction(state: State): Direction {
-    this.updateReductionFactor();
-    if(Math.random() < this.explorationFactor*this.reductionFactor) {
-      return this.chooseRandomAction();
-    } else {
-      return this.chooseGreedyAction(state);
-    }
+    return state.policy.getDirectionByDistribution();
   }
 
+  startNewEpisode(): void {
+    throw Error('Method has to be implemented!')
+  };
+  endEpisode(): void {
+    throw Error('Method has to be implemented!')
+  }
+}
+
+interface ParameterUpdator {
   /**
-   * 
    * @param oldState state before taking action
    * @param action action taken
    * @param reward reward yielded by taking the action
    * @param newState state after taking action
    */
-  afterAction(oldState: State, action: Direction, reward: number, newState: State) {
+  updateParameters(stateTensor: StateTensor, oldState: State, action: Direction, reward: number, newState: State): void
+}
 
-    const newVal = (1-this.learningRate)*oldState.value + 
-      this.learningRate*(
-        newState.reward +
-        this.discountFactor*newState.value
-      )
-    
-    oldState.value = newVal;
+interface PolicyUpdator {
+  updatePolicy(stateTensor: StateTensor, currentState: State): void
+}
+
+class EpsilonGreedyPolicyUpdator implements PolicyUpdator {
+
+  constructor(protected Ɛ: number) {}
+
+  updatePolicy(stateTensor: StateTensor, currentState: State) {
+    const neighbors = new Directional();
+    directionList.forEach(d => {
+      const nextState = currentState.getNeighbor(d);
+      neighbors.set(d, nextState.value);
+    })
+
+    const greedyAction = neighbors.getMaximum().direction;
+    const newPolicy = new Directional();
+    directionList.forEach(action => newPolicy.set(action,
+      action === greedyAction ? this.Ɛ / numberOfDirections + 1-this.Ɛ : this.Ɛ / numberOfDirections
+    ));
+    currentState.policy = newPolicy;
+  }
+}
+
+export class GreedyPolicyUpdator extends EpsilonGreedyPolicyUpdator {
+  constructor() {
+    super(0);
+  }
+}
+
+
+/*
+this.reductionFactor *= 0.99999956;
+if(this.iteration % 1000000 === 0) {
+  console.log('reductionFactor', this.reductionFactor);
+}
+*/
+
+type UpdateEpsilon = (Ɛ: number, iteration: number) => number;
+export class UpdatedEpsilonGreedyPolicyUpdator extends EpsilonGreedyPolicyUpdator {
+  iteration: number = 0;
+
+  constructor(protected updateEpsilon: UpdateEpsilon, protected init: number = 1) {
+    super(init)
+    this.Ɛ = init;
   }
 
-  startNewEpisode() {}
+  updatePolicy(stateTensor: StateTensor, currentState: State) {
+    this.iteration++;
+    this.Ɛ = this.updateEpsilon(this.Ɛ, this.iteration);
+    super.updatePolicy(stateTensor, currentState);
+  }
+}
 
-  endEpisode() {}
+export class TemporalDifferenceLearning implements ParameterUpdator {
 
+  constructor(protected learningRate: number, protected discountFactor: number) {}
+
+  updateParameters(stateTensor: StateTensor, oldState: State, action: Direction, reward: number, newState: State) {
+    const newVal = 
+    (1-this.learningRate) * oldState.value + 
+        this.learningRate * (newState.reward + this.discountFactor*newState.value)
+  
+    oldState.value = newVal;
+  }
 }
