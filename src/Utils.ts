@@ -48,12 +48,10 @@ export type Direction = typeof directionList[number];
 export const numberOfDirections = directionList.length;
 
 
+type DirectionValues = {[direction in Direction]: number};
 export class Directional {
-  private directionValues: {[direction in Direction]: number};
 
-  constructor(initValues?: {[direction in Direction]: number}) {
-    this.directionValues = initValues ?? {'north': 0, 'east': 0, 'south': 0, 'west': 0};
-  }
+  constructor(protected directionValues: DirectionValues = {'north': 0, 'east': 0, 'south': 0, 'west': 0}) {}
 
   get(d: Direction): number {
     return this.directionValues[d];
@@ -74,11 +72,38 @@ export class Directional {
       directionValue: maxValue
     }
   }
+}
+
+const pseudoZero = 0.00001;
+
+export class StochasticDirectional extends Directional {
+
+  constructor(initValues: DirectionValues = {'north': 1, 'east': 1, 'south': 1, 'west': 1}) {
+    super(initValues);
+    this.normalizeDirectionValues();
+  }
+
+  private normalizeDirectionValues() {
+    const l1Norm = directionList.reduce((acc, direction) => this.directionValues[direction], 0);
+    if(l1Norm === 0) {
+      throw new Error('Sum of all elements in StochasticDirectional is Zero, so normalization has failed!')
+    }
+    for(let direction of directionList) {
+      this.directionValues[direction] /= l1Norm;
+      if(this.directionValues[direction] < -pseudoZero) {
+        throw new Error('Elements in StochasticDirectional should not be negative!')
+      }
+    }
+  }
+
+  set(d: Direction, value: number): void {
+    super.set(d, value);
+    this.normalizeDirectionValues();
+  }
 
   getDirectionByDistribution(): Direction {
     const directionValueList = Object.entries(this.directionValues) as [Direction, number][];
-    const sum = directionValueList.reduce( (acc, [_, val]) => {return acc+val}, 0);
-    let r = Math.random()*sum;
+    let r = Math.random();
 
     for(let [direction, val] of directionValueList) {
       if(r < val) {
