@@ -1,5 +1,5 @@
 import {Agent} from './Agent';
-import { TemporalDifferenceLearning, Algorithm, EpsilonGreedyPolicyUpdator } from './Algorith';
+import { TemporalDifferenceLearning, Algorithm, EpsilonGreedyPolicyUpdator, UpdatedEpsilonGreedyPolicyUpdator } from './Algorith';
 import { StateTensor, StateBuilder } from './State';
 
 
@@ -48,7 +48,7 @@ export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, age
     stateTensor,
     new Algorithm(
       new TemporalDifferenceLearning(0.3, 0.5),
-      new EpsilonGreedyPolicyUpdator(0.3),
+      new UpdatedEpsilonGreedyPolicyUpdator(e => e*0.9999998),
     )
   );
   
