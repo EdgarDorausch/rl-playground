@@ -76,8 +76,8 @@ export class Directional {
   }
 
   getDirectionByDistribution(): Direction {
-    const directionValueList = Object.entries(this.directionValues) as [Direction, number][]
-    const sum = directionValueList.reduce( (acc,[_, val]) => acc+val, 0);
+    const directionValueList = Object.entries(this.directionValues) as [Direction, number][];
+    const sum = directionValueList.reduce( (acc, [_, val]) => {return acc+val}, 0);
     let r = Math.random()*sum;
 
     for(let [direction, val] of directionValueList) {
@@ -89,7 +89,8 @@ export class Directional {
     }
 
     console.warn('Encountered non normalized distribution. This could caused by rounding errors!')
-    const [direction, _] =  directionValueList[directionValueList.length];
+    // Get direction of the last element in directionValueList
+    const direction = directionValueList[directionValueList.length-1][0];
     return direction;
   }
 }
