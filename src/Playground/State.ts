@@ -1,4 +1,4 @@
-import { Direction, Directional, StochasticDirectional } from './Utils';
+import { Directional, StochasticDirectional, Direction } from './Utils';
 
 export class State {
 
@@ -40,16 +40,16 @@ export class State {
     const y = this._y;
     const t = this._t;
     switch(direction) {
-      case 'north':
+      case Direction.NORTH:
         newPos = [x, y-1, t+1];
         break;
-      case 'east':
+      case Direction.EAST:
         newPos = [1+x, y, t+1];
         break;
-      case 'south':
+      case Direction.SOUTH:
         newPos = [x, y+1, t+1];
         break;
-      case 'west':
+      case Direction.WEST:
         newPos = [x-1, y, t+1];
         break;
       default:

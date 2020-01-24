@@ -1,5 +1,7 @@
 // Helper functions
 
+type Array4 = [number, number, number, number];
+
 export function translate(x: number, y: number): string {
   return `translate(${x},${y})`
 }
@@ -43,24 +45,27 @@ export function cross<A,B>(as: A[], bs: B[]): [A,B][] {
 export const viewModeList = ['reward' , 'value' , 'q-function' , 'policy'] as ['reward' , 'value' , 'q-function' , 'policy'];
 export type ViewMode = typeof viewModeList[number];
 
-export const directionList = ['north' , 'east' , 'west' , 'south'] as ['north' , 'east' , 'west' , 'south'];
-export type Direction = typeof directionList[number];
-export const numberOfDirections = directionList.length;
+export enum Direction {
+  NORTH,
+  EAST,
+  SOUTH,
+  WEST,
+}
 
+export const numberOfDirections = 4;
 
-type DirectionValues = {[direction in Direction]: number};
 type DirectionValueInitializer = (direction: Direction) => number;
 export class Directional {
 
-  protected directionValues: DirectionValues;
+  protected directionValues: Array4;
 
   constructor(directionValueInitializer: DirectionValueInitializer = () => 0) {
-    this.directionValues = {
-      north: directionValueInitializer('north'),
-      east: directionValueInitializer('east'),
-      west: directionValueInitializer('west'),
-      south: directionValueInitializer('south'),
-    }
+    this.directionValues = [
+      directionValueInitializer(Direction.NORTH),
+      directionValueInitializer(Direction.EAST),
+      directionValueInitializer(Direction.SOUTH),
+      directionValueInitializer(Direction.WEST)
+    ]
   }
 
   get(d: Direction): number {
@@ -74,8 +79,16 @@ export class Directional {
    * Returns an object with the direction whose value is maximal and the according value
    */
   getMaximum(): {direction: Direction, directionValue: number} {
-    const maxValue = Math.max(...directionList.map(d => this.directionValues[d]));
-    const maxDirection = chooseRandomArrayElement(directionList.filter(d => this.directionValues[d] === maxValue));
+    let maxDirection = 0;
+    let maxValue = 0;
+    
+    // Find maximum by traversing all direction values
+    for(let d=0; d<numberOfDirections; d++) {
+      if(this.directionValues[d] > maxValue) {
+        maxValue = this.directionValues[d];
+        maxDirection = d;
+      }
+    }
     
     return {
       direction: maxDirection,
@@ -92,22 +105,20 @@ export class StochasticDirectional extends Directional {
   }
 
    normalize() {
-    const l1Norm = directionList.reduce((acc, direction) => this.directionValues[direction]+acc, 0);
+    const l1Norm = this.directionValues.reduce((acc, val) => val+acc, 0);
     if(l1Norm === 0) {
       throw new Error('Sum of all elements in StochasticDirectional is Zero, so normalization has failed!')
     }
-    for(let direction of directionList) {
-      this.directionValues[direction] /= l1Norm;
-    }
+    this.directionValues.map(val => val/l1Norm);
   }
 
   check() {
-    const l1Norm = directionList.reduce((acc, direction) => this.directionValues[direction]+acc, 0);
+    const l1Norm = this.directionValues.reduce((acc, val) => val+acc, 0);
     if(l1Norm === 0) {
       throw new Error('Sum of all elements in StochasticDirectional is Zero, so normalization has failed!')
     }
-    for(let direction of directionList) {
-      if(this.directionValues[direction] < -pseudoZero) {
+    for(let val of this.directionValues) {
+      if(val < -pseudoZero) {
         throw new Error('Elements in StochasticDirectional should not be negative!')
       }
     }
@@ -118,20 +129,20 @@ export class StochasticDirectional extends Directional {
   }
 
   getDirectionByDistribution(): Direction {
-    const directionValueList = Object.entries(this.directionValues) as [Direction, number][];
     let r = Math.random();
 
-    for(let [direction, val] of directionValueList) {
+    // For all directions
+    for(let d = 0; d<numberOfDirections; d++){
+      const val = this.directionValues[d];
       if(r < val) {
-        return direction;
+        return d;
       } else {
         r -= val;
       }
     }
 
     console.warn('Encountered non normalized distribution. This could caused by rounding errors!')
-    // Get direction of the last element in directionValueList
-    const direction = directionValueList[directionValueList.length-1][0];
-    return direction;
+    // Return last direction (this is west; id===3)
+    return Direction.WEST;
   }
 }
