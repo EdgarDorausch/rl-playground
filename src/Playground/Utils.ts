@@ -1,6 +1,7 @@
 // Helper functions
 
 type Array4 = [number, number, number, number];
+type Array8 = [number, number, number, number, number, number, number, number];
 
 export function translate(x: number, y: number): string {
   return `translate(${x},${y})`
@@ -50,21 +51,29 @@ export enum Direction {
   EAST,
   SOUTH,
   WEST,
+  NORTH_EAST,
+  SOUTH_EAST,
+  SOUTH_WEST,
+  NORTH_WEST,
 }
 
-export const numberOfDirections = 4;
+export const numberOfDirections = 8;
 
 type DirectionValueInitializer = (direction: Direction) => number;
 export class Directional {
 
-  protected directionValues: Array4;
+  protected directionValues: Array8;
 
   constructor(directionValueInitializer: DirectionValueInitializer = () => 0) {
     this.directionValues = [
       directionValueInitializer(Direction.NORTH),
       directionValueInitializer(Direction.EAST),
       directionValueInitializer(Direction.SOUTH),
-      directionValueInitializer(Direction.WEST)
+      directionValueInitializer(Direction.WEST),
+      directionValueInitializer(Direction.NORTH_EAST),
+      directionValueInitializer(Direction.SOUTH_EAST),
+      directionValueInitializer(Direction.SOUTH_WEST),
+      directionValueInitializer(Direction.NORTH_WEST),
     ]
   }
 
@@ -100,7 +109,7 @@ export class Directional {
 const pseudoZero = 0.00001;
 export class StochasticDirectional extends Directional {
 
-  constructor(directionValueInitializer: DirectionValueInitializer = () => 0.25) {
+  constructor(directionValueInitializer: DirectionValueInitializer = () => 1/8) {
     super(directionValueInitializer);
   }
 
@@ -142,7 +151,7 @@ export class StochasticDirectional extends Directional {
     }
 
     console.warn('Encountered non normalized distribution. This could caused by rounding errors!')
-    // Return last direction (this is west; id===3)
-    return Direction.WEST;
+    // Return last direction (this is west; id===7)
+    return Direction.NORTH_WEST;
   }
 }
