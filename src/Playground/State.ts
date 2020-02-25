@@ -156,4 +156,16 @@ export class StateTensor {
 
     return state;
   }
+
+  get sizeX() {
+    return this.maxX;
+  }
+
+  get sizeY() {
+    return this.maxY;
+  }
+
+  get sizeT() {
+    return this.maxTimer;
+  }
 }

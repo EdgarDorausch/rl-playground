@@ -104,6 +104,36 @@ export class Directional {
       directionValue: maxValue
     }
   }
+
+  /**
+   * Adding the values of an other directional in an inplace way
+   */
+  add(other: Directional) {
+    // For all directions
+    for(let d = 0; d<numberOfDirections; d++){
+      this.directionValues[d] += other.directionValues[d];
+    }
+  }
+
+  /**
+   * Adding the values of an other directional in an inplace way
+   */
+  sub(other: Directional) {
+    // For all directions
+    for(let d = 0; d<numberOfDirections; d++){
+      this.directionValues[d] -= other.directionValues[d];
+    }
+  }
+
+  /**
+   * 
+   * Inplace scaling of the direction values
+   */
+  scale(k: number) {
+    for(let d = 0; d<numberOfDirections; d++){
+      this.directionValues[d] *= k;
+    }
+  }
 }
 
 const pseudoZero = 0.00001;
@@ -118,7 +148,8 @@ export class StochasticDirectional extends Directional {
     if(l1Norm === 0) {
       throw new Error('Sum of all elements in StochasticDirectional is Zero, so normalization has failed!')
     }
-    this.directionValues.map(val => val/l1Norm);
+    for(let d=0; d<numberOfDirections; d++)
+      this.directionValues[d] /= l1Norm;
   }
 
   check() {
@@ -153,5 +184,16 @@ export class StochasticDirectional extends Directional {
     console.warn('Encountered non normalized distribution. This could caused by rounding errors!')
     // Return last direction (this is west; id===7)
     return Direction.NORTH_WEST;
+  }
+
+  getEntropy(): number {
+
+    let sum = 0
+    // For all directions
+    for(let d = 0; d<numberOfDirections; d++){
+      sum -= this.directionValues[d]*Math.log(this.directionValues[d])
+    }
+
+    return sum;
   }
 }
