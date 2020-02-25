@@ -39,15 +39,7 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
 
     switch(viewMode) {
       case 'policy':
-        const itNum = 20;
-        const itNumHalf = Math.floor(itNum/2);
-        let acc = 0;
-        const {x, y, t} = state;
-        for(let i = 0; i < itNum; i++) {
-          acc += this.stateTensor.unsafeGet(x,y,t+i-itNumHalf).policy === direction ? 1 : 0
-        }
-        return this.linScale(acc/itNum);
-        // return direction === state.policy ? '#222' : '#eee';
+        return this.linScale(state.policy.get(direction));
       case 'q-function':
         return this.linScale(state.q.get(direction));
       case 'reward':

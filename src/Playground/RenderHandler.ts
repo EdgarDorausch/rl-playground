@@ -1,4 +1,4 @@
-import { ViewMode, sleep, Direction, directionList, cross, range, viewModeList } from './Utils';
+import { ViewMode, sleep, cross, range, viewModeList, Direction, numberOfDirections } from './Utils';
 import { Agent } from './Agent';
 import { State, StateTensor } from './State';
 import { MazeCellRenderer } from './MazeCellRenderer';
@@ -86,25 +86,25 @@ export class RenderHandler {
 
       if(showTriangles) {
 
-        for(let direction of directionList) {
+        for(let direction=0; direction<numberOfDirections; direction++) {
           this.ctx.fillStyle = this.getTriangleColor(direction, state);
           this.ctx.beginPath();
           this.ctx.moveTo(this.halfCellSize, this.halfCellSize);
 
           switch(direction) {
-            case 'north':
+            case Direction.NORTH:
               this.ctx.lineTo(0, 0);
               this.ctx.lineTo(this.cellSize, 0);
               break;
-            case 'east':
+            case Direction.EAST:
               this.ctx.lineTo(this.cellSize, 0);
               this.ctx.lineTo(this.cellSize, this.cellSize);
               break;
-            case 'south':
+            case Direction.SOUTH:
               this.ctx.lineTo(this.cellSize, this.cellSize);
               this.ctx.lineTo(0, this.cellSize);
               break;
-            case 'west':
+            case Direction.WEST:
               this.ctx.lineTo(0, this.cellSize);
               this.ctx.lineTo(0, 0);
               break;
