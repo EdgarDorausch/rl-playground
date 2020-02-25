@@ -1,4 +1,4 @@
-import { ViewMode, sleep, cross, range, viewModeList, Direction, numberOfDirections } from './Utils';
+import { ViewMode, sleep, cross, range, viewModeList, Direction } from './Utils';
 import { Agent } from './Agent';
 import { State, StateTensor } from './State';
 import { MazeCellRenderer } from './MazeCellRenderer';

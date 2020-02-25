@@ -1,5 +1,5 @@
 import { State, StateTensor } from '../State';
-import { Directional, StochasticDirectional } from '../Utils';
+import { Directional, StochasticDirectional, numberOfDirections } from '../Utils';
 
 /**
  * A `PolicyUpdator` is responsible for updating the policy (probability distribution) after the agent has taken an action.
@@ -25,8 +25,8 @@ export class EpsilonGreedyPolicyUpdator implements PolicyUpdator {
     const greedyAction = neighbors.getMaximum().direction;
     const newPolicy = new StochasticDirectional(action => 
       action === greedyAction ?
-      this.Ɛ / 4 + 1-this.Ɛ :
-      this.Ɛ / 4
+      this.Ɛ / numberOfDirections + 1-this.Ɛ :
+      this.Ɛ / numberOfDirections
     );
     currentState.policy = newPolicy;
   }

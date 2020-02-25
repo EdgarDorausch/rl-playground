@@ -43,7 +43,7 @@ export function cross<A,B>(as: A[], bs: B[]): [A,B][] {
   return out;
 }
 
-export const viewModeList = ['reward' , 'value' , 'q-function' , 'policy'] as ['reward' , 'value' , 'q-function' , 'policy'];
+export const viewModeList = ['reward' , 'value' , 'q-function' , 'policy', 'policy_aie'] as ['reward' , 'value' , 'q-function' , 'policy',  'policy_aie'];
 export type ViewMode = typeof viewModeList[number];
 
 export enum Direction {

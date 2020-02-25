@@ -40,6 +40,7 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
       case 'value':
         return this.powerScale(state.value);
       case 'policy':
+      case 'policy_aie':
       case 'q-function':
         return 'red';
     }
@@ -52,13 +53,15 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
     }
 
     switch(viewMode) {
-      case 'policy':
+      case 'policy_aie': // AccumulatedInverseEntropy
         if(this.currentTime !== state.t) 
           this.updatePolicyBuffer(state.t)
         
         const {x, y} = state;
         const val = this.policyBuffer.unsafeGet(x,y,0).policy.get(direction);
         return this.linScale(val);
+      case 'policy':
+        return this.linScale(state.policy.get(direction))
       case 'q-function':
         return this.linScale(state.q.get(direction));
       case 'reward':
@@ -93,6 +96,7 @@ export class MyMazeCellRenderer implements MazeCellRenderer {
 
     switch(viewMode) {
       case 'policy':
+      case 'policy_aie':
       case 'q-function':
         return true;
       case 'reward':
