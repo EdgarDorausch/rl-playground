@@ -1,7 +1,7 @@
 // Helper functions
 
-type Array4 = [number, number, number, number];
-type Array8 = [number, number, number, number, number, number, number, number];
+type Array9 = [number, number, number, number, number, number, number, number, number];
+const directionArray = new Array(9).fill(null).map((_,i) => i) as Array9;
 
 export function translate(x: number, y: number): string {
   return `translate(${x},${y})`
@@ -51,30 +51,24 @@ export enum Direction {
   EAST,
   SOUTH,
   WEST,
+
   NORTH_EAST,
   SOUTH_EAST,
   SOUTH_WEST,
   NORTH_WEST,
+
+  STALL
 }
 
-export const numberOfDirections = 8;
+export const numberOfDirections = 9;
 
 type DirectionValueInitializer = (direction: Direction) => number;
 export class Directional {
 
-  protected directionValues: Array8;
+  protected directionValues: Array9;
 
   constructor(directionValueInitializer: DirectionValueInitializer = () => 0) {
-    this.directionValues = [
-      directionValueInitializer(Direction.NORTH),
-      directionValueInitializer(Direction.EAST),
-      directionValueInitializer(Direction.SOUTH),
-      directionValueInitializer(Direction.WEST),
-      directionValueInitializer(Direction.NORTH_EAST),
-      directionValueInitializer(Direction.SOUTH_EAST),
-      directionValueInitializer(Direction.SOUTH_WEST),
-      directionValueInitializer(Direction.NORTH_WEST),
-    ]
+    this.directionValues = directionArray.map(directionValueInitializer) as Array9;
   }
 
   get(d: Direction): number {
@@ -139,7 +133,7 @@ export class Directional {
 const pseudoZero = 0.00001;
 export class StochasticDirectional extends Directional {
 
-  constructor(directionValueInitializer: DirectionValueInitializer = () => 1/8) {
+  constructor(directionValueInitializer: DirectionValueInitializer = () => 1/numberOfDirections) {
     super(directionValueInitializer);
   }
 
@@ -182,8 +176,8 @@ export class StochasticDirectional extends Directional {
     }
 
     console.warn('Encountered non normalized distribution. This could caused by rounding errors!')
-    // Return last direction (this is west; id===7)
-    return Direction.NORTH_WEST;
+    // Return last direction
+    return numberOfDirections-1;
   }
 
   getEntropy(): number {

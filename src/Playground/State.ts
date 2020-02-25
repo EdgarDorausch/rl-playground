@@ -64,6 +64,9 @@ export class State {
       case Direction.NORTH_WEST:
         newPos = [x-1, y-1, t+1];
         break;
+      case Direction.STALL:
+        newPos = [x, y, t+1];
+        break;
     default:
         throw new Error(`Unknown direction: ${direction}`)
     }

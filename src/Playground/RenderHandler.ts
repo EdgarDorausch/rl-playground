@@ -94,7 +94,7 @@ export class RenderHandler {
           this.ctx.fillStyle = this.getTriangleColor(direction, state);
 
           this.ctx.beginPath();
-          this.ctx.moveTo(0, 0);
+          //this.ctx.moveTo(0, 0);
 
           this.ctx.lineTo(-this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
           this.ctx.lineTo(-this.halfDiagonalSectionSize, -this.halfCellSize);
@@ -124,6 +124,15 @@ export class RenderHandler {
           this.ctx.fill();
 
         }
+
+        this.ctx.fillStyle = this.getTriangleColor(9, state);
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
+        this.ctx.lineTo(this.halfDiagonalSectionSize, this.halfDiagonalSectionSize);
+        this.ctx.lineTo(-this.halfDiagonalSectionSize, this.halfDiagonalSectionSize);
+        this.ctx.lineTo(-this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
+        this.ctx.closePath();
+        this.ctx.fill();
 
       } else {
         this.ctx.fillStyle = this.getCellColor(state);
