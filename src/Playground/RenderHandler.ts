@@ -1,4 +1,4 @@
-import { ViewMode, sleep, Direction, directionList, cross, range, viewModeList } from './Utils';
+import { ViewMode, sleep, cross, range, viewModeList, Direction } from './Utils';
 import { Agent } from './Agent';
 import { State, StateTensor } from './State';
 import { MazeCellRenderer } from './MazeCellRenderer';
@@ -8,6 +8,7 @@ export class RenderHandler {
   private cellStriding: number;
   private canvasSize: number;
   private halfCellSize: number;
+  private halfDiagonalSectionSize: number;
 
   private ctx: CanvasRenderingContext2D|null = null;
 
@@ -39,7 +40,7 @@ export class RenderHandler {
     this.positions = cross(range(cellDim), range(cellDim));
 
     this.halfCellSize = cellSize/2;
-
+    this.halfDiagonalSectionSize = cellSize/6;
     this.getCellColor = this.getCellColor.bind(this);
     this.getTriangleVisibility = this.getTriangleVisibility.bind(this);
     this.draw = this.draw.bind(this);
@@ -86,33 +87,53 @@ export class RenderHandler {
 
       if(showTriangles) {
 
-        for(let direction of directionList) {
-          this.ctx.fillStyle = this.getTriangleColor(direction, state);
-          this.ctx.beginPath();
-          this.ctx.moveTo(this.halfCellSize, this.halfCellSize);
+        this.ctx.translate(this.halfCellSize, this.halfCellSize);
 
-          switch(direction) {
-            case 'north':
-              this.ctx.lineTo(0, 0);
-              this.ctx.lineTo(this.cellSize, 0);
-              break;
-            case 'east':
-              this.ctx.lineTo(this.cellSize, 0);
-              this.ctx.lineTo(this.cellSize, this.cellSize);
-              break;
-            case 'south':
-              this.ctx.lineTo(this.cellSize, this.cellSize);
-              this.ctx.lineTo(0, this.cellSize);
-              break;
-            case 'west':
-              this.ctx.lineTo(0, this.cellSize);
-              this.ctx.lineTo(0, 0);
-              break;
-          }
+        // Render "straight" cell-sections
+        for(let direction=0; direction<4; direction++) {
+          this.ctx.fillStyle = this.getTriangleColor(direction, state);
+
+          this.ctx.beginPath();
+          //this.ctx.moveTo(0, 0);
+
+          this.ctx.lineTo(-this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
+          this.ctx.lineTo(-this.halfDiagonalSectionSize, -this.halfCellSize);
+          this.ctx.lineTo(this.halfDiagonalSectionSize, -this.halfCellSize);
+          this.ctx.lineTo(this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
 
           this.ctx.closePath();
           this.ctx.fill();
+
+          this.ctx.rotate(Math.PI / 2)
         }
+
+        // Render "diagonal" cell-sections
+        for(let direction=4; direction<8; direction++) {
+          this.ctx.fillStyle = this.getTriangleColor(direction, state);
+
+          this.ctx.rotate(Math.PI / 2)
+
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
+
+          this.ctx.lineTo(this.halfDiagonalSectionSize, -this.halfCellSize);
+          this.ctx.lineTo(this.halfCellSize, -this.halfCellSize);
+          this.ctx.lineTo(this.halfCellSize, -this.halfDiagonalSectionSize);
+
+          this.ctx.closePath();
+          this.ctx.fill();
+
+        }
+
+        this.ctx.fillStyle = this.getTriangleColor(9, state);
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
+        this.ctx.lineTo(this.halfDiagonalSectionSize, this.halfDiagonalSectionSize);
+        this.ctx.lineTo(-this.halfDiagonalSectionSize, this.halfDiagonalSectionSize);
+        this.ctx.lineTo(-this.halfDiagonalSectionSize, -this.halfDiagonalSectionSize);
+        this.ctx.closePath();
+        this.ctx.fill();
+
       } else {
         this.ctx.fillStyle = this.getCellColor(state);
         this.ctx.fillRect(0,0, this.cellSize, this.cellSize);

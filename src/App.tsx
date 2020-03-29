@@ -2,10 +2,10 @@ import React from 'react';
 import { Button, ControlGroup, ProgressBar } from '@blueprintjs/core';
 import './App.css';
 
-import {ViewMode, viewModeList} from './Utils';
-import {constructMaze} from './Maze';
-import { RenderHandler } from './RenderHandler';
-import { MyMazeCellRenderer } from './MazeCellRenderer';
+import {ViewMode, viewModeList} from './Playground/Utils';
+import {constructMaze} from './Playground/Maze';
+import { RenderHandler } from './Playground/RenderHandler';
+import { MyMazeCellRenderer } from './Playground/MazeCellRenderer';
 
 
 const FlexContainer: React.SFC<{width?: string|number}> = ({width, children}) => (

@@ -1,4 +1,4 @@
-import { Direction, directionList, chooseRandomArrayElement, Directional } from './Utils';
+import { Directional, StochasticDirectional, Direction } from './Utils';
 
 export class State {
 
@@ -14,7 +14,7 @@ export class State {
     public reward: number,
     public value: number,
     public q: Directional,
-    public policy: Direction
+    public policy: StochasticDirectional
   ) {}
 
   get t() {
@@ -40,19 +40,34 @@ export class State {
     const y = this._y;
     const t = this._t;
     switch(direction) {
-      case 'north':
+      case Direction.NORTH:
         newPos = [x, y-1, t+1];
         break;
-      case 'east':
+      case Direction.EAST:
         newPos = [1+x, y, t+1];
         break;
-      case 'south':
+      case Direction.SOUTH:
         newPos = [x, y+1, t+1];
         break;
-      case 'west':
+      case Direction.WEST:
         newPos = [x-1, y, t+1];
         break;
-      default:
+      case Direction.NORTH_EAST:
+        newPos = [x+1, y-1, t+1];
+        break;
+      case Direction.SOUTH_EAST:
+        newPos = [1+x, y+1, t+1];
+        break;
+      case Direction.SOUTH_WEST:
+        newPos = [x-1, y+1, t+1];
+        break;
+      case Direction.NORTH_WEST:
+        newPos = [x-1, y-1, t+1];
+        break;
+      case Direction.STALL:
+        newPos = [x, y, t+1];
+        break;
+    default:
         throw new Error(`Unknown direction: ${direction}`)
     }
     
@@ -82,7 +97,7 @@ export type StateBuilder = (x: number, y: number, t: number) => ({
   reward?: number,
   value?: number,
   q?: Directional,
-  policy?: Direction 
+  policy?: StochasticDirectional 
 })
 
 type State3DList = State[][][];
@@ -115,7 +130,7 @@ export class StateTensor {
           reward  ?? 0,
           value   ?? 0,
           q       ?? new Directional(),
-          policy  ?? chooseRandomArrayElement(directionList)
+          policy  ?? new StochasticDirectional()
         )}
       )))
   }
@@ -143,5 +158,17 @@ export class StateTensor {
     }
 
     return state;
+  }
+
+  get sizeX() {
+    return this.maxX;
+  }
+
+  get sizeY() {
+    return this.maxY;
+  }
+
+  get sizeT() {
+    return this.maxTimer;
   }
 }

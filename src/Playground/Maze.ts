@@ -1,6 +1,8 @@
 import {Agent} from './Agent';
-import { TemporalDifferenceLearning } from './Algorith';
+import { Algorithm } from './Algorithm';
 import { StateTensor, StateBuilder } from './State';
+import { UpdatedEpsilonGreedyPolicyUpdator } from './Algorithm/PolicyUpdator';
+import { TemporalDifferenceLearning } from './Algorithm/ParameterUpdator';
 
 
 export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, agent: Agent} {
@@ -45,7 +47,11 @@ export function constructMaze(mazeStr: string[]): {stateTensor: StateTensor, age
   
   const agent = new Agent(
     startState,
-    new TemporalDifferenceLearning(0.3, 0.5)
+    stateTensor,
+    new Algorithm(
+      new TemporalDifferenceLearning(0.3, 0.5),
+      new UpdatedEpsilonGreedyPolicyUpdator(e => e*0.9999998),
+    )
   );
   
   return {stateTensor, agent};  
